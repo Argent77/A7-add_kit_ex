@@ -1,0 +1,16 @@
+// *** Test: copy kit ***
+
+INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
+
+LAF ADD_KIT_EX
+INT_VAR
+  visible     = 0   // kit cannot be selected during character creation
+  mixed       = RESOLVE_STR_REF(~Rat Catcher~)
+  help        = RESOLVE_STR_REF(~RAT CATCHER: The rat catcher catches rats...~)
+STR_VAR
+  kit_name    = ~XX_RATCATCHER~
+  source_kit  = ~BOUNTY_HUNTER~
+RET kit_id
+END
+
+PRINT ~XX_RATCATCHER kit value = %kit_id%~

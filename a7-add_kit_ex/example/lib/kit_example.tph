@@ -1,0 +1,46 @@
+// *** Test: add new kit ***
+
+INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
+
+ACTION_IF GAME_IS ~iwdee~ BEGIN
+  OUTER_TEXT_SPRINT game ~iwd~
+END ELSE BEGIN
+  OUTER_TEXT_SPRINT game ~bg~
+END
+
+// Note: Parent class values are used for omitted parameters
+LAF ADD_KIT_EX
+  INT_VAR
+    kit_class     = 2   // Fighter
+    mixed         = RESOLVE_STR_REF(~Marksman~)
+    lower         = RESOLVE_STR_REF(~marksman~)
+    help          = RESOLVE_STR_REF(~MARKSMAN: (Marksman kit description...)~)
+    // EE-specific arguments
+    briefdesc     = RESOLVE_STR_REF(~MARKSMAN: (Marksman kit description...)~)
+  STR_VAR
+    kit_name      = ~XX_MARKSMAN~
+    unusable      = ~0x00008000~
+    // clasweap      = ~1 1 1 1 1 1 1 1~
+    weapprof      = ~2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 5 5 5 5 5 1 1 1 1~
+    // abclasrq      = ~9 0 0 0 0 0~
+    // abclsmod      = ~0 0 0 0 0 0~
+    // abdcdsrq      = ~17 0 0 0 0 0~
+    // abdcscrq      = ~15 0 0 0 0 0~
+    // alignmnt      = ~1 1 1 1 1 1 1 1 1~
+    // dualclas      = ~0 1 1 1 1 0~
+    // luabbr        = ~Fi0~
+    stweap        = ~LEAT14 * HELM07 BAG20 RING06 RING31 CLCK02 BOOT01 AMUL19 BRAC16 BELT06 AROW11,40 BULL03,40 BOLT06,40 POTN52,5 POTN04,2 POTN14,5 BOW18 XBOW09 STAF08~
+    clab_path     = EVAL ~%MOD_FOLDER%/kit/%game%/CLABMFI1.2DA~
+    // kittable      = ~K_F_H K_F_D K_F_G K_F_E K_F_HE K_F_HL K_F_HO~
+    // EE-specific arguments
+    // clsrcreq      = ~1 1 1 1 1 1 1~
+    // clswpbon      = ~1 0 2~
+    // hpclass       = ~HPWAR~
+    // numwslot      = ~4~
+    // clascolr      = ~30 91 93 23 93~
+    bdstweap      = ~LEAT05 * HELM01 * RING06 * * * * BRAC09 BELT02 AROW02,40 BULL02,40 BOLT02,40 POTN08,5 POTN17,3 * BOW06 XBOW05 STAF02~
+  RET
+    kit_id
+END
+
+PRINT ~XX_MARKSMAN kit value = %kit_id%~

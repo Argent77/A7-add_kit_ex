@@ -1,0 +1,15 @@
+BACKUP ~example/backup~
+AUTHOR ~Argent77~
+VERSION ~1.0~
+
+
+BEGIN ~ADD_KIT_EX: Add new kit~
+INCLUDE ~%MOD_FOLDER%/lib/kit_example.tph~
+
+
+BEGIN ~ADD_KIT_EX: Copy existing kit~
+INCLUDE ~%MOD_FOLDER%/lib/kit_example2.tph~
+
+
+BEGIN ~GET_KIT_EX: Retrieve kit attributes~
+INCLUDE ~%MOD_FOLDER%/lib/kit_example3.tph~

@@ -1,0 +1,67 @@
+// *** Test: get kit attributes ***
+
+INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
+
+OUTER_TEXT_SPRINT kit_name ~BOUNTY_HUNTER~
+
+LAF GET_KIT_EX
+INT_VAR
+  use_parent = 1  // whether to retrieve unavailable attributes from the kit's parent class
+STR_VAR
+  kit_name
+RET
+  // numeric return values
+  kit_id
+  kit_class
+  mixed
+  lower
+  help
+  // EE-specific
+  biography
+  briefdesc
+  fallen
+  fallen_notice
+  // textual return values
+  unusable
+  clasweap
+  weapprof
+  abclasrq
+  abclsmod
+  abdcdsrq
+  abdcscrq
+  alignmnt
+  dualclas
+  luabbr
+  stweap
+  clab_res
+  kittable
+  // EE-specific
+  clsrcreq
+  clswpbon
+  hpclass
+  numwslot
+  clascolr
+  clasiskl
+  clasthac
+  thiefscl
+  backstab
+  sneakatt
+  crippstr
+  thiefskl
+  traplimt
+  bdstweap
+END
+
+ACTION_IF (kit_id != "-1") BEGIN
+  PRINT ~Getting attributes of %kit_name%:~
+  ACTION_FOR_EACH var IN ~kit_id~ ~kit_class~ ~mixed~ ~lower~ ~help~ ~biography~ ~briefdesc~ ~fallen~ ~fallen_notice~
+                         ~unusable~ ~clasweap~ ~weapprof~ ~abclasrq~ ~abclsmod~ ~abdcdsrq~ ~abdcscrq~ ~alignmnt~ ~dualclas~
+                         ~luabbr~ ~stweap~ ~clab_res~ ~kittable~ ~clsrcreq~ ~clswpbon~ ~hpclass~ ~numwslot~ ~clascolr~
+                         ~clasiskl~ ~clasthac~ ~thiefscl~ ~backstab~ ~sneakatt~ ~crippstr~ ~thiefskl~ ~traplimt~ ~bdstweap~
+  BEGIN
+    OUTER_TEXT_SPRINT content EVAL ~%%var%%~
+    PRINT ~Content of %var%: %content%~
+  END
+END ELSE BEGIN
+  ABORT ~Kit not found: %kit_name%.~
+END
