@@ -618,23 +618,6 @@ BEGIN
 END
 
 
-// Check if GemRB is installed (based on GemRB check in WeiDU sources)
-DEFINE_ACTION_FUNCTION a7#add_kit_ex#is_gemrb
-RET result
-BEGIN
-  OUTER_SET result = 0
-  COPY - ~gemrb_version.txt~ ~gemrb_version.txt~
-    REPLACE_TEXTUALLY ~[ %TAB%%WNL%]~ ~~
-    PATCH_IF (BUFFER_LENGTH > 0) BEGIN
-      READ_ASCII 0 value (BUFFER_LENGTH)
-      PATCH_IF (~%value%~ STRING_MATCHES_REGEXP ~[0-9]+\.[0-9]+\.[0-9]+\(\.[0-9]+\)?~ = 0) BEGIN
-        SET result = 1
-      END
-    END
-  BUT_ONLY IF_EXISTS
-END
-
-
 DEFINE_ACTION_FUNCTION a7#add_kit_ex#get_kit_support
 INT_VAR
   kit_base = 0x4000
@@ -649,8 +632,8 @@ RET
 BEGIN
   OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~ ? 1 : 0
   OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~) ? 1 : 0
+  OUTER_SET is_gemrb = (FILE_EXISTS ~GemRB.log~ || FILE_EXISTS ~gem-baldur.ini~) ? 1 : 0
   LAF a7#add_kit_ex#is_tobex RET is_tobex = result END
-  LAF a7#add_kit_ex#is_gemrb RET is_gemrb = result END
 
   OUTER_SET kit_id_base = kit_base
   // TODO: verify EE kit limit
