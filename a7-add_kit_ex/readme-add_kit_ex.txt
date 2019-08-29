@@ -55,8 +55,8 @@ INT_VAR fallen_notice   (optional, EE-only) Fallen notice strref. Notice is show
 STR_VAR source_kit      (optional, unless kit_class is omitted)  Name of an existing kit to copy information from for
                         all omitted parameters. Specify this parameter and set "visible" to 0 to imitate behavior of
                         the original WeiDU function "COPY_KIT".
-STR_VAR unusable        (required, unless "source_kit" is defined) Unusability code added to kitlist.2da. Must be a
-                        positive number in decimal or (preferrably) hexadecimal notation.
+STR_VAR unusable        (optional) Unusability code added to kitlist.2da. Must be a positive number in decimal or
+                        (preferrably) hexadecimal notation. Omit to inherit usability of source kit or parent class.
                         Note: Defined as string parameter to work around WeiDU restrictions.
 STR_VAR clasweap        (optional) 2DA string added to clasweap.2da.
 STR_VAR weapprof        (optional) 2DA string added to weapprof.2da.
@@ -69,7 +69,8 @@ STR_VAR dualclas        (optional) 2DA string added to dualclas.2da.
 STR_VAR luabbr          (optional) 2DA string added to luabbr.2da.
 STR_VAR stweap          (optional) 2DA string added to 25stweap.2da.
 STR_VAR clab_path       (optional) The path to the CLAB-style 2DA file of your kit. File is installed and reference is
-                        added to kitlist.2da. Omit to use CLAB of specified source kit or parent class instead.
+                        added to kitlist.2da. Omit to inherit CLAB of specified source kit or parent class (single
+                        class only) instead.
 STR_VAR kittable        (optional) List of which class and race combinations the kit should be available for, as per
                         kittable.2da. Kit will be available for all races if omitted. Use parameter "visible" instead
                         if you want to make the kit unavailable for all races during character creation.
@@ -120,7 +121,6 @@ LAUNCH_ACTION_FUNCTION ADD_KIT_EX
     help      = RESOLVE_STR_REF(~ADVENTURER: A jack-of-all-trades...~)
   STR_VAR
     kit_name  = "ADVENTURER"
-    unusable  = "0x00100000"  // Swashbuckler "unusability"
   RET
     kit_id
 END

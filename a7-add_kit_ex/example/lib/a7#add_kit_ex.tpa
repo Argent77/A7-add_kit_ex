@@ -653,11 +653,12 @@ BEGIN
   LAF a7#add_kit_ex#is_gemrb RET is_gemrb = result END
 
   OUTER_SET kit_id_base = kit_base
+  // TODO: verify EE kit limit
   OUTER_SET kits_limit = 0x100
   ACTION_IF (is_tobex) BEGIN
     OUTER_SET kits_limit = 0x500
   END
-  ACTION_IF (is_gemrb || is_ee) BEGIN
+  ACTION_IF (is_gemrb) BEGIN
     OUTER_SET kits_limit = 0x1000
   END
   ACTION_IF (kit_limit_override > 0) BEGIN
@@ -889,7 +890,8 @@ BEGIN
 
   // "unusable" should be a valid number
   ACTION_IF (~%unusable%~ STR_EQ ~~) BEGIN
-    FAIL ~Argument "unusable" not specified.~
+    // Falling back to base class usability
+    OUTER_TEXT_SPRINT unusable ~0x00004000~
   END ELSE BEGIN
     LAF a7#add_kit_ex#to_hex
       INT_VAR prefix = 0
@@ -1123,7 +1125,7 @@ BEGIN
     // getting next available kit number
     LAF a7#add_kit_ex#next_row STR_VAR resref = ~kitlist~ RET kit_number = index END
     ACTION_IF (kit_number = 0) BEGIN OUTER_SET kit_number += 1 END
-    ACTION_IF (kit_number >= kits_limit) BEGIN
+    ACTION_IF (kit_number > kits_limit) BEGIN
       FAIL ~Unable to add kit [%kit_name%]. The game does not currently support more than %kits_limit% kits.~
     END
     OUTER_SET kit_number_full = kit_number + kit_id_base
