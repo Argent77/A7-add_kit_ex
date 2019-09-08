@@ -461,8 +461,7 @@ INT_VAR
   divisor = 1   // any integer except 0
 STR_VAR
   number = ~0~  // any number of any size in decimal notation, or number in hexadecimal notation in signed 32-bit range
-RET
-  quotient remainder  // returns empty strings if operation failed
+RET quotient remainder  // return empty strings if operation failed
 BEGIN
   OUTER_TEXT_SPRINT quotient ~~
   OUTER_TEXT_SPRINT remainder ~~
@@ -515,12 +514,11 @@ END
 DEFINE_ACTION_FUNCTION a7#add_kit_ex#to_hex
 INT_VAR
   min_digits = 8  // minimum number of digits in resulting hex number
-  lower_case = 0   // whether to produce lower-cased hex digits
+  lower_case = 0  // whether to produce lower-cased hex digits
   prefix = 1      // whether to add "0x" prefix to resulting hex number
 STR_VAR
   number = ~0~    // any number of any size in decimal or hexadecimal notation
-RET
-  hex             // Resulting hex number; empty if conversion failed.
+RET hex           // Resulting hex number; empty if conversion failed.
 BEGIN
   OUTER_SET ZERO = 48   // ASCII: 0
   OUTER_SET SIGN = 45  // ASCII: -
@@ -592,8 +590,7 @@ INT_VAR
   prefix = 1
 STR_VAR
   number = ~0~
-RET
-  hex
+RET hex
 BEGIN
   INNER_ACTION BEGIN
     LAF a7#add_kit_ex#to_hex INT_VAR min_digits lower_case prefix STR_VAR number RET hex END
@@ -854,8 +851,8 @@ BEGIN
     ~abdcscrq~ => ~6~
     ~alignmnt~ => ~9~
     ~dualclas~ => ~6~
-    ~luabbr~  => ~1~
-    ~stweap~  => ~20~
+    ~luabbr~   => ~1~
+    ~stweap~   => ~20~
   END
   ACTION_PHP_EACH tables_def AS resref => min_count BEGIN
     LAF a7#add_kit_ex#split STR_VAR string = EVAL EVAL ~%%resref%%~ RET items RET_ARRAY items END
