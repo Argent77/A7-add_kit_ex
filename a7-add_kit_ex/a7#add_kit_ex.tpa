@@ -61,8 +61,14 @@ BEGIN
       OUTER_SET idx += 1
     END
     OUTER_FOR (; idx < EVAL ~%array%~ && VARIABLE_IS_SET $EVAL ~%array%~(~%idx%~); ++idx) BEGIN
+      ACTION_IF (insert_index = idx && idx > offset && NOT ~%insert%~ STR_EQ ~~) BEGIN
+        OUTER_TEXT_SPRINT string ~%string% %insert%~
+      END
       OUTER_TEXT_SPRINT s $EVAL ~%array%~(~%idx%~)
       OUTER_TEXT_SPRINT string ~%string% %s%~
+    END
+    ACTION_IF (insert_index = idx && NOT ~%insert%~ STR_EQ ~~) BEGIN
+      OUTER_TEXT_SPRINT string ~%string% %insert%~
     END
   END
 END
