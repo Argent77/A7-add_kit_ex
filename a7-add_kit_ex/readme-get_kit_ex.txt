@@ -1,5 +1,6 @@
-Function GET_KIT_EX
-~~~~~~~~~~~~~~~~~~~
+#########################
+## Function GET_KIT_EX ##
+#########################
 
 Author: Argent77
 Licence: Public Domain
@@ -76,4 +77,4 @@ Changelog
 ~~~~~~~~~
 
 v0.1.0:
-- Initial release
+- First beta

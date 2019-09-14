@@ -40,19 +40,18 @@ STR_VAR kit_name        (required) The internal name of your kit. This name is u
                         files to reference your kit.
 INT_VAR visible         (optional) Indicates whether the kit will be selectable during character creation. Set to 0 to
                         make it unselectable for player characters. Default: 1
-INT_VAR kit_class       (required, unless "source_kit" is defined) Parent class ID added to kitlist.2da. Can be omitted
-                        if parameter "source_kit" is specified.
-INT_VAR mixed           (required, unless "source_kit" is defined) Mixed name strref of your kit, added to kitlist.2da.
+INT_VAR kit_class       (required, unless "source_kit" is specified) Parent class ID added to kitlist.2da.
+INT_VAR mixed           (required, unless "source_kit" is specified) Mixed name strref of your kit, added to kitlist.2da.
 INT_VAR lower           (optional) Lower name strref of your kit, added to kitlist.2da. A lower-cased version of
                         "mixed" is generated if this parameter is not available.
-INT_VAR help            (required, unless "source_kit" is defined) Description string of your kit, added to kitlist.2da.
+INT_VAR help            (optional) Description string of your kit, added to kitlist.2da.
 INT_VAR biography       (optional, EE-only) The biography strref of your kit, added to clastext.2da.
 INT_VAR briefdesc       (optional, EE-only) Short class or kit description strref added to clastext.2da.
 INT_VAR fallen          (optional, EE-only) 0 or 1. Indicates whether the kit is a "fallen" variant. This parameter is
                         only relevant for ranger and paladin kits. Added to clastext.2da.
 INT_VAR fallen_notice   (optional, EE-only) Fallen notice strref. Notice is shown in combat log when the fallen status
                         is applied to the character. Added to clastext.2da.
-STR_VAR source_kit      (optional, unless kit_class is omitted)  Name of an existing kit to copy information from for
+STR_VAR source_kit      (optional, unless "kit_class" is omitted)  Name of an existing kit to copy information from for
                         all omitted parameters. Specify this parameter and set "visible" to 0 to imitate behavior of
                         the original WeiDU function "COPY_KIT".
 STR_VAR unusable        (optional) Unusability code added to kitlist.2da. Must be a positive number in decimal or
@@ -98,6 +97,7 @@ STR_VAR traplimt        (optional, EE-only) 2DA string added to traplimt.2da. Th
                         thief kits and will be ignored for other classes.
 STR_VAR bdstweap        (optional, EE-only) 2DA string added to bdstweap.2da.
 
+Return value:
 RET kit_id              The numeric value generated for the specified kit. This value is exactly 0x4000 less than the
                         number your kit is assigned in kit.ids. Returns -1 if the kit couldn't be installed.
 
@@ -118,7 +118,8 @@ LAUNCH_ACTION_FUNCTION ADD_KIT_EX
     kit_class = 4   // Parent class: Thief
     mixed     = RESOLVE_STR_REF(~Adventurer~)
     lower     = RESOLVE_STR_REF(~adventurer~)   // Not strictly necessary: will be auto-generated if omitted
-    help      = RESOLVE_STR_REF(~ADVENTURER: A jack-of-all-trades...~)
+    help      = RESOLVE_STR_REF(~ADVENTURER: A jack-of-all-trades...~)  // Not strictly necessary: Parent class
+                                                                        // description will be used if omitted
   STR_VAR
     kit_name  = "ADVENTURER"
   RET
@@ -134,4 +135,4 @@ Changelog
 ~~~~~~~~~
 
 v0.1.0:
-- Initial release
+- First beta

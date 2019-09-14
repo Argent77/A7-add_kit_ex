@@ -1,6 +1,6 @@
 /*
  * ADD_KIT_EX - A full ADD_KIT replacement that is compatible with both classic and Enhanced Edition games.
- * GET_KIT - Retrieves attributes of any given kit.
+ * GET_KIT_EX - A function for retrieving attributes of any given kit.
  * Author: Argent77
  * Licence: public domain
  * Date: 2019-08-19
@@ -94,7 +94,7 @@ STR_VAR resref = ~~
 RET index
 BEGIN
   OUTER_SET index = "-1"
-  COPY_EXISTING - ~%resref%.2da~ ~override~
+  COPY_EXISTING ~%resref%.2da~ ~override~
     COUNT_2DA_ROWS 1 num_rows
     SET index = num_rows - 3
   BUT_ONLY IF_EXISTS
@@ -107,7 +107,7 @@ STR_VAR resref = ~~
 RET index
 BEGIN
   OUTER_SET index = "-1"
-  COPY_EXISTING - ~%resref%.2da~ ~override~
+  COPY_EXISTING ~%resref%.2da~ ~override~
     COUNT_2DA_COLS num_cols
     SET index = num_cols - 1
   BUT_ONLY IF_EXISTS
@@ -127,7 +127,7 @@ RET
 BEGIN
   OUTER_TEXT_SPRINT row ~~
   OUTER_SET row_index = "-1"
-  COPY_EXISTING - ~%resref%.2da~ ~override~
+  COPY_EXISTING ~%resref%.2da~ ~override~
     COUNT_2DA_COLS num_cols
     READ_2DA_ENTRIES_NOW table 1
     FOR (r = 3; r < table; ++r) BEGIN
@@ -161,7 +161,7 @@ RET
 BEGIN
   OUTER_TEXT_SPRINT column ~~
   OUTER_SET column_index = "-1"
-  COPY_EXISTING - ~%resref%.2da~ ~override~
+  COPY_EXISTING ~%resref%.2da~ ~override~
     COUNT_2DA_COLS num_cols
     READ_2DA_ENTRIES_NOW table 1
     SET row2 = row + 2  // rebased search row
@@ -521,7 +521,7 @@ STR_VAR
 RET hex           // Resulting hex number; empty if conversion failed.
 BEGIN
   OUTER_SET ZERO = 48   // ASCII: 0
-  OUTER_SET SIGN = 45  // ASCII: -
+  OUTER_SET SIGN = 45   // ASCII: -
   OUTER_TEXT_SPRINT hex ~~
   ACTION_IF (min_digits < 0) BEGIN OUTER_SET min_digits = 0 END
 
@@ -608,13 +608,13 @@ BEGIN
     OUTER_SET result = 1
   END ELSE ACTION_IF (FILE_EXISTS ~TobEx.dll~) BEGIN
     // Later TobEx versions
-    COPY - ~TobEx_ini/TobExVer.txt~ ~TobEx_ini/TobExVer.txt~
-      REPLACE_TEXTUALLY ~[ %TAB%%WNL%]~ ~~
-      PATCH_IF (BUFFER_LENGTH > 0) BEGIN
-        READ_ASCII 0 value (BUFFER_LENGTH)
-        PATCH_IF (IS_AN_INT ~value~ && value > 0) BEGIN
-          SET result = 1
-        END
+    COPY ~TobEx_ini/TobExVer.txt~ ~TobEx_ini/TobExVer.txt~
+      READ_ASCII 0 value (BUFFER_LENGTH)
+      INNER_PATCH_SAVE value ~%value%~ BEGIN
+        REPLACE_TEXTUALLY ~[ %TAB%%WNL%]+~ ~~
+      END
+      PATCH_IF (IS_AN_INT ~value~ && value > 0) BEGIN
+        SET result = 1
       END
     BUT_ONLY IF_EXISTS
   END
@@ -675,6 +675,60 @@ BEGIN
 
   ACTION_IF (INDEX(~[0-9]~ ~%kit_name%~) = 0) || (INDEX(~[ %TAB%%WNL%*?/\]~ ~%kit_name%~) >= 0) BEGIN
     FAIL ~Argument "%param_name%" contains invalid characters.~
+  END
+END
+
+
+// Retrieve parent class description strref
+DEFINE_ACTION_FUNCTION a7#add_kit_ex#get_kitdesc
+INT_VAR
+  kit_class = 0
+  help      = "-2"
+RET help
+BEGIN
+  ACTION_IF (help < "-1") BEGIN
+    COPY_EXISTING ~clastext.2da~ ~override~
+      READ_2DA_ENTRIES_NOW clastext 1
+      FOR (row = 3; row < clastext; ++row) BEGIN
+        READ_2DA_ENTRY_FORMER clastext row 1 class_id
+        PATCH_IF (IS_AN_INT ~class_id~ && class_id = kit_class) BEGIN
+          READ_2DA_ENTRY_FORMER clastext row 2 kit_id
+          PATCH_IF (IS_AN_INT ~kit_id~ && kit_id = 16384) BEGIN
+            READ_2DA_ENTRY_FORMER clastext row 4 value
+            PATCH_IF (IS_AN_INT ~value~) BEGIN
+              SET help = value
+              SET row = clastext
+            END
+          END
+        END
+      END
+    BUT_ONLY IF_EXISTS
+  END
+  ACTION_IF (help < "-1") BEGIN
+    ACTION_DEFINE_ASSOCIATIVE_ARRAY class_help BEGIN
+      ~2~ => ~9556~   // Fighter
+      ~3~ => ~9559~   // Cleric
+      ~4~ => ~9561~   // Thief
+      ~5~ => ~9562~   // Bard
+      ~6~ => ~9558~   // Paladin
+      ~7~ => ~9574~   // Fighter/Mage
+      ~8~ => ~9573~   // Fighter/Cleric
+      ~9~ => ~9572~   // Fighter/Thief
+      ~10~ => ~9576~  // Fighter/Mage/Thief
+      ~11~ => ~9560~  // Druid
+      ~12~ => ~9557~  // Ranger
+      ~13~ => ~9575~  // Mage/Thief
+      ~14~ => ~9577~  // Cleric/Mage
+      ~15~ => ~9578~  // Cleric/Thief
+      ~16~ => ~9579~  // Fighter/Druid
+      ~17~ => ~9581~  // Fighter/Mage/Cleric
+      ~18~ => ~9580~  // Cleric/Ranger
+      ~19~ => ~45866~ // Sorcerer
+      ~20~ => ~45867~ // Monk
+    END
+    ACTION_IF (IS_AN_INT $class_help(~%kit_class%~)) BEGIN
+      OUTER_SET help = $class_help(~%kit_class%~)
+    END
   END
 END
 
@@ -780,7 +834,7 @@ STR_VAR
   clone2 = ~~         // secondary clone from this entry if string is empty
 RET success resref
 BEGIN
-  COPY_EXISTING - ~campaign.2da~ ~override~
+  COPY_EXISTING ~campaign.2da~ ~override~
     LPF a7#add_kit_ex#get_2da_value
       STR_VAR
         row = ~SOD~
@@ -1124,6 +1178,8 @@ BEGIN
       END ELSE BEGIN
         FAIL ~Could not determine parent class for kit [%kit_name%].~
       END
+    END ELSE ACTION_IF (kit_class > 18 && !is_ee && !is_gemrb) BEGIN
+      FAIL ~Game does not support kits for the specified parent class [%kit_class%].~
     END
 
     // basic argument checks
@@ -1141,6 +1197,10 @@ BEGIN
     // preparing kit name and description strings
     ACTION_IF (mixed < "-1") BEGIN
       FAIL ~Argument "mixed" not specified.~
+    END
+    LAF a7#add_kit_ex#get_kitdesc
+      INT_VAR kit_class help
+      RET help
     END
     ACTION_IF (help < "-1") BEGIN
       FAIL ~Argument "help" not specified.~
@@ -1173,7 +1233,7 @@ BEGIN
 
     // adding kitlist entry
     LAF a7#add_kit_ex#next_column STR_VAR resref = ~weapprof~ RET prof_id = index END
-    COPY_EXISTING - ~kitlist.2da~ ~override~ COUNT_2DA_COLS kitlist_num_cols BUT_ONLY
+    COPY_EXISTING ~kitlist.2da~ ~override~ COUNT_2DA_COLS kitlist_num_cols BUT_ONLY
     OUTER_TEXT_SPRINT line ~%kit_number% %kit_name% %lower% %mixed% %help% %clab_res% %prof_id% %unusable% %kit_class%~
     ACTION_IF (kitlist_num_cols > 9) BEGIN
       LAF a7#add_kit_ex#to_hex STR_VAR number = EVAL ~%kit_number_full%~ RET kit_number_full_hex = hex END
@@ -1285,7 +1345,7 @@ BEGIN
     ACTION_IF (is_ee) BEGIN
       // getting clastext resref for SoD
       OUTER_TEXT_SPRINT sod_clastext ~~
-      COPY_EXISTING - ~campaign.2da~ ~override~
+      COPY_EXISTING ~campaign.2da~ ~override~
         LPF a7#add_kit_ex#get_2da_value
           STR_VAR
             row = ~sod~
@@ -1313,7 +1373,7 @@ BEGIN
         ACTION_IF (FILE_EXISTS_IN_GAME ~%resref%.2da~) BEGIN
           // retrieving source kit/class information
           OUTER_SET items = 0
-          COPY_EXISTING - ~%resref%.2da~ ~override~
+          COPY_EXISTING ~%resref%.2da~ ~override~
             COUNT_2DA_COLS num_cols
             READ_2DA_ENTRIES_NOW class_table 1
             FOR (type = 0; type < 2; ++type) BEGIN
@@ -1605,7 +1665,7 @@ BEGIN
           END ELSE BEGIN
             // use column specified in kitlist.2da
             OUTER_SET column_index = "-1"
-            COPY_EXISTING - ~weapprof.2da~ ~override~
+            COPY_EXISTING ~weapprof.2da~ ~override~
               COUNT_2DA_COLS num_cols
               PATCH_IF (proficiency < num_cols) BEGIN
                 READ_2DA_ENTRIES_NOW weapprof_table 1
@@ -1660,7 +1720,7 @@ BEGIN
           ACTION_IF (is_sod) BEGIN
             OUTER_TEXT_SPRINT resref ~bdstweap~
             // getting resref name
-            COPY_EXISTING - ~campaign.2da~ ~override~
+            COPY_EXISTING ~campaign.2da~ ~override~
               LPF a7#add_kit_ex#get_2da_value
                 STR_VAR
                   row = ~SOD~
@@ -1691,7 +1751,7 @@ BEGIN
             // find matching clastext.2da row (kit or parent class)
             OUTER_TEXT_SPRINT clastext_class ~~
             OUTER_TEXT_SPRINT clastext_kit ~~
-            COPY_EXISTING - ~clastext.2da~ ~override~
+            COPY_EXISTING ~clastext.2da~ ~override~
               COUNT_2DA_COLS num_cols
               READ_2DA_ENTRIES_NOW clastext_table 1
               SET req_kid = kit_id
