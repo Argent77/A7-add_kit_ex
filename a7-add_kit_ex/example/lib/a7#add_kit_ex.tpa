@@ -455,6 +455,63 @@ BEGIN
 END
 
 
+// Create a new 2da file in the game's override folder and populate it with content.
+DEFINE_ACTION_FUNCTION a7#add_kit_ex#create_2da
+STR_VAR
+  resref  = ~~
+  default = ~*~
+  columns = ~VALUE~
+  items = ~~      // name of array for items
+RET success       // indicates whether file exists after the function call
+BEGIN
+<<<<<<<< .../a7-add_kit_ex/inlined/empty.2da
+>>>>>>>>
+  OUTER_SET success = 0
+  ACTION_IF (NOT ~%resref%~ STR_EQ ~~) BEGIN
+    ACTION_IF (~%default%~ STR_EQ ~~) BEGIN
+      OUTER_TEXT_SPRINT default ~*~
+    END
+    ACTION_IF (NOT FILE_EXISTS_IN_GAME ~%resref%.2da~) BEGIN
+      COPY ~.../a7-add_kit_ex/inlined/empty.2da~ ~override/%resref%.2DA~
+        DELETE_BYTES 0 BUFFER_LENGTH
+        SET pos = 0
+        // table header
+        TEXT_SPRINT s ~2DA V1.0%WNL%~
+        SET len = STRING_LENGTH ~%s%~
+        INSERT_BYTES pos len
+        WRITE_ASCIIE pos ~%s%~ (len)
+        SET pos += len
+        // default value
+        TEXT_SPRINT s ~%default%%WNL%~
+        SET len = STRING_LENGTH ~%s%~
+        INSERT_BYTES pos len
+        WRITE_ASCIIE pos ~%s%~ (len)
+        SET pos += len
+        // columns
+        TEXT_SPRINT s ~    %columns%%WNL%~
+        SET len = STRING_LENGTH ~%s%~
+        INSERT_BYTES pos len
+        WRITE_ASCIIE pos ~%s%~ (len)
+        SET pos += len
+        // table items
+        PATCH_IF (NOT ~%items%~ STR_EQ ~~ && VARIABLE_IS_SET EVAL ~%items%~) BEGIN
+          SET num_items = EVAL ~%items%~
+          FOR (i = 0; i < num_items; ++i) BEGIN
+            TEXT_SPRINT s $EVAL ~%items%~(~%i%~)
+            SET len = STRING_LENGTH ~%s%~
+            INSERT_BYTES pos len
+            WRITE_ASCIIE pos ~%s%~ (len)
+            SET pos += len
+          END
+        END
+        SET success = 1
+    END ELSE BEGIN
+      OUTER_SET success = 1
+    END
+  END
+END
+
+
 // Divide "number" by "divisor" and return both quotient and remainder.
 DEFINE_ACTION_FUNCTION a7#add_kit_ex#divide
 INT_VAR
@@ -1299,13 +1356,27 @@ BEGIN
       OUTER_SET i = (items > 0 && ($items(~0~) STR_EQ ~%kit_name%~ || $items(~0~) STR_EQ ~%kit_class_name%~)) ? 1 : 0
       OUTER_FOR (; i < items; ++i) BEGIN
         OUTER_TEXT_SPRINT resref $items(~%i%~)
-        ACTION_IF (FILE_EXISTS_IN_GAME ~%resref%.2DA~) BEGIN
+        // ensure table exists
+        OUTER_SET def_items = 1
+        OUTER_TEXT_SPRINT $def_items(~0~) ~1 0~
+        LAF a7#add_kit_ex#create_2da
+          STR_VAR
+            resref
+            default = ~*~
+            columns = ~KIT~
+            items = ~def_items~
+          RET success
+        END
+        // adding kittable entry
+        ACTION_IF (success) BEGIN
           LAF a7#add_kit_ex#next_row STR_VAR resref RET index END
           OUTER_SET index += 1
           OUTER_TEXT_SPRINT line ~%index% %kit_number%~
           APPEND ~%resref%.2DA~ ~%line%~ UNLESS ~^[ %TAB%]*[0-9]+[ %TAB%]+%kit_number%[ %TAB%%MNL%]*$~
           ACTION_TO_UPPER ~resref~
           ACTION_DEFINE_ASSOCIATIVE_ARRAY tables_modified BEGIN ~%resref%~ => 1 END
+        END ELSE BEGIN
+          WARN ~Could not add kit reference to %resref%.2DA.~
         END
       END
     END
