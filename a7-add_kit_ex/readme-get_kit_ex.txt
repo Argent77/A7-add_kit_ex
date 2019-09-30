@@ -76,5 +76,12 @@ RET bdstweap        (EE-only) 2DA string from bdstweap.2da.
 Changelog
 ~~~~~~~~~
 
+v0.2.0:
+- Fixed kit limit check
+- Improved GemRB and TobEx checks
+- Made more parameters optional
+- Missing tables are provided if needed
+- Function autogenerates class ability table for multiclass kits if needed
+
 v0.1.0:
 - First beta
