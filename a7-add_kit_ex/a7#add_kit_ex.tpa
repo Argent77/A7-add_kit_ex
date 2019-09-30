@@ -498,15 +498,402 @@ BEGIN
           SET num_items = EVAL ~%items%~
           FOR (i = 0; i < num_items; ++i) BEGIN
             TEXT_SPRINT s $EVAL ~%items%~(~%i%~)
-            SET len = STRING_LENGTH ~%s%~
+            SET len = STRING_LENGTH ~%s%%WNL%~
             INSERT_BYTES pos len
-            WRITE_ASCIIE pos ~%s%~ (len)
+            WRITE_ASCIIE pos ~%s%%WNL%~ (len)
             SET pos += len
           END
         END
         SET success = 1
     END ELSE BEGIN
       OUTER_SET success = 1
+    END
+  END
+END
+
+
+// Merge content of clab_1..clab_3 into a single CLAB table.
+DEFINE_ACTION_FUNCTION a7#add_kit_ex#merge_clabs
+STR_VAR
+  clab_1 = ~~
+  clab_2 = ~~
+  clab_3 = ~~
+  resref = ~~
+RET
+  success
+BEGIN
+  OUTER_SET success = 0
+  ACTION_IF (NOT ~%resref%~ STR_EQ ~~) BEGIN
+    // loading source table data
+    OUTER_SET num_cols1 = 0
+    OUTER_TEXT_SPRINT default1 ~****~
+    COPY_EXISTING ~%clab_1%.2DA~ ~override~
+      COUNT_2DA_COLS num_cols1
+      READ_2DA_ENTRIES_NOW table1 1
+      READ_2DA_ENTRY_FORMER table1 1 0 default1
+    BUT_ONLY IF_EXISTS
+
+    OUTER_SET num_cols2 = 0
+    COPY_EXISTING ~%clab_2%.2DA~ ~override~
+      COUNT_2DA_COLS num_cols2
+      READ_2DA_ENTRIES_NOW table2 1
+      READ_2DA_ENTRY_FORMER table2 1 0 default2
+    BUT_ONLY IF_EXISTS
+
+    OUTER_SET num_cols3 = 0
+    COPY_EXISTING ~%clab_3%.2DA~ ~override~
+      COUNT_2DA_COLS num_cols3
+      READ_2DA_ENTRIES_NOW table3 1
+      READ_2DA_ENTRY_FORMER table3 1 0 default3
+    BUT_ONLY IF_EXISTS
+
+    // generating output table
+    OUTER_PATCH ~~ BEGIN
+      SET max_cols = (num_cols1 > num_cols2) ? num_cols1 : num_cols2
+      SET max_cols = (num_cols3 > max_cols) ? num_cols3 : max_cols
+      SET max_rows = 0  // determined dynamically
+      SET num_rows = 0
+      FOR (col = 1; col < max_cols; ++col) BEGIN
+        SET cur_row = 0
+        // merging table data
+        PATCH_IF (col < num_cols1) BEGIN
+          FOR (row = 3; row < table1; ++row) BEGIN
+            READ_2DA_ENTRY_FORMER table1 row col value
+            PATCH_IF (NOT ~%value%~ STR_EQ ~%default1%~) BEGIN
+              TEXT_SPRINT $table_out(~%cur_row%~ ~%col%~) ~%value%~
+              SET cur_row += 1
+            END
+          END
+        END
+        PATCH_IF (col < num_cols2) BEGIN
+          FOR (row = 3; row < table2; ++row) BEGIN
+            READ_2DA_ENTRY_FORMER table2 row col value
+            PATCH_IF (NOT ~%value%~ STR_EQ ~%default2%~) BEGIN
+              TEXT_SPRINT $table_out(~%cur_row%~ ~%col%~) ~%value%~
+              SET cur_row += 1
+            END
+          END
+        END
+        PATCH_IF (col < num_cols3) BEGIN
+          FOR (row = 3; row < table3; ++row) BEGIN
+            READ_2DA_ENTRY_FORMER table3 row col value
+            PATCH_IF (NOT ~%value%~ STR_EQ ~%default3%~) BEGIN
+              TEXT_SPRINT $table_out(~%cur_row%~ ~%col%~) ~%value%~
+              SET cur_row += 1
+            END
+          END
+        END
+        PATCH_IF (cur_row > max_rows) BEGIN
+          SET max_rows = cur_row
+        END
+      END
+      // adding table row headers
+      PATCH_IF (max_rows < 6) BEGIN SET max_rows = 6 END
+      FOR (row = 0; row < max_rows; ++row) BEGIN
+        SET idx = row + 1
+        TEXT_SPRINT $table_out(~%row%~ ~0~) ~ABILITY%idx%~
+      END
+    END
+
+<<<<<<<< .../a7-add_kit_ex/inlined/empty.2da
+>>>>>>>>
+    COPY ~.../a7-add_kit_ex/inlined/empty.2da~ ~override/%resref%.2DA~
+      DELETE_BYTES 0 BUFFER_LENGTH
+      SET pos = 0
+      // adding table header
+      TEXT_SPRINT line ~2DA V1.0%WNL%~
+      SET len = STRING_LENGTH ~%line%~
+      INSERT_BYTES pos len
+      WRITE_ASCIIE pos ~%line%~ (len)
+      SET pos += len
+      // adding default value
+      TEXT_SPRINT line ~%default1%%WNL%~
+      SET len = STRING_LENGTH ~%line%~
+      INSERT_BYTES pos len
+      WRITE_ASCIIE pos ~%line%~ (len)
+      SET pos += len
+      // adding column headers
+      TEXT_SPRINT line ~  ~
+      FOR (i = 1; i < max_cols; ++i) BEGIN
+        TEXT_SPRINT line ~%line% %i%~
+      END
+      TEXT_SPRINT line ~%line%%WNL%~
+      SET len = STRING_LENGTH ~%line%~
+      INSERT_BYTES pos len
+      WRITE_ASCIIE pos ~%line%~ (len)
+      SET pos += len
+      // adding table data
+      FOR (row = 0; row < max_rows; ++row) BEGIN
+        TEXT_SPRINT line $table_out(~%row%~ ~0~)
+        FOR (col = 1; col < max_cols; ++col) BEGIN
+          PATCH_IF (VARIABLE_IS_SET $table_out(~%row%~ ~%col%~)) BEGIN
+            TEXT_SPRINT item $table_out(~%row%~ ~%col%~)
+            TEXT_SPRINT line ~%line% %item%~
+          END ELSE BEGIN
+            TEXT_SPRINT line ~%line% %default1%~
+          END
+        END
+        TEXT_SPRINT line ~%line%%WNL%~
+        SET len = STRING_LENGTH ~%line%~
+        INSERT_BYTES pos len
+        WRITE_ASCIIE pos ~%line%~ (len)
+        SET pos += len
+      END
+      PRETTY_PRINT_2DA
+
+    OUTER_SET success = 1
+  END
+END
+
+
+// Create and return CLAB based on specified class/kit. Autogenerates CLAB if it doesn't exist yet.
+DEFINE_ACTION_FUNCTION a7#add_kit_ex#create_clab
+INT_VAR
+  kit_class = 0           // any valid single or multiclass value
+STR_VAR
+  kit_name = ~TRUECLASS~  // Kit must be related to kit_class
+RET
+  resref                  // name of the CLAB resref (either generated or referenced)
+  success                 // whether CLAB could be determined
+BEGIN
+  OUTER_TEXT_SPRINT resref ~~
+  OUTER_SET success = 0
+  ACTION_IF (~%kit_name%~ STR_EQ ~~) BEGIN
+    OUTER_TEXT_SPRINT kit_name ~TRUECLASS~
+  END
+
+  // retrieving CLAB data
+  OUTER_SET num_classes = 0
+  ACTION_MATCH kit_class WITH
+    1 BEGIN // MAGE
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 1
+      OUTER_TEXT_SPRINT clab_1 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_out ~CLABMA~
+    END
+    2 BEGIN // FIGHTER
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 2
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABFI~
+    END
+    3 BEGIN // CLERIC
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 3
+      OUTER_TEXT_SPRINT clab_1 ~CLABPR01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABPR~
+    END
+    4 BEGIN // THIEF
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 4
+      OUTER_TEXT_SPRINT clab_1 ~CLABTH01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABTH~
+    END
+    5 BEGIN // BARD
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 5
+      OUTER_TEXT_SPRINT clab_1 ~CLABBA01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABBA~
+    END
+    6 BEGIN // PALADIN
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 6
+      OUTER_TEXT_SPRINT clab_1 ~CLABPA01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABPA~
+    END
+    7 BEGIN // FIGHTER_MAGE
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 2
+      OUTER_SET class_2 = 1
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABFM~
+    END
+    8 BEGIN // FIGHTER_CLERIC
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 2
+      OUTER_SET class_2 = 3
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABPR01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABFC~
+    END
+    9 BEGIN // FIGHTER_THIEF
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 2
+      OUTER_SET class_2 = 4
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABTH01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABFT~
+    END
+    10 BEGIN // FIGHTER_MAGE_THIEF
+      OUTER_SET num_classes = 3
+      OUTER_SET class_1 = 2
+      OUTER_SET class_2 = 1
+      OUTER_SET class_3 = 4
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_3 ~CLABTH01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLBFMT~
+    END
+    11 BEGIN // DRUID
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 11
+      OUTER_TEXT_SPRINT clab_1 ~CLABDR01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABDR~
+    END
+    12 BEGIN // RANGER
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 12
+      OUTER_TEXT_SPRINT clab_1 ~CLABRN01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABRN~
+    END
+    13 BEGIN // MAGE_THIEF
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 1
+      OUTER_SET class_2 = 4
+      OUTER_TEXT_SPRINT clab_1 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABTH01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABMT~
+    END
+    14 BEGIN // CLERIC_MAGE
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 3
+      OUTER_SET class_2 = 1
+      OUTER_TEXT_SPRINT clab_1 ~CLABPR01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABCM~
+    END
+    15 BEGIN // CLERIC_THIEF
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 3
+      OUTER_SET class_2 = 4
+      OUTER_TEXT_SPRINT clab_1 ~CLABPR01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABTH01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABCT~
+    END
+    16 BEGIN // FIGHTER_DRUID
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 2
+      OUTER_SET class_2 = 11
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABDR01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABFD~
+    END
+    17 BEGIN // FIGHTER_MAGE_CLERIC
+      OUTER_SET num_classes = 3
+      OUTER_SET class_1 = 2
+      OUTER_SET class_2 = 1
+      OUTER_SET class_3 = 3
+      OUTER_TEXT_SPRINT clab_1 ~CLABFI01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_3 ~CLABPR01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLBFMC~
+    END
+    18 BEGIN // CLERIC_RANGER
+      OUTER_SET num_classes = 2
+      OUTER_SET class_1 = 3
+      OUTER_SET class_2 = 12
+      OUTER_TEXT_SPRINT clab_1 ~CLABPR01~
+      OUTER_TEXT_SPRINT clab_2 ~CLABRN01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABCR~
+    END
+    19 BEGIN // SORCERER
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 19
+      OUTER_TEXT_SPRINT clab_1 ~CLABMA01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABSO~
+    END
+    20 BEGIN // MONK
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 20
+      OUTER_TEXT_SPRINT clab_1 ~CLABMO01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABMO~
+    END
+    21 BEGIN // SHAMAN
+      OUTER_SET num_classes = 1
+      OUTER_SET class_1 = 21
+      OUTER_TEXT_SPRINT clab_1 ~CLABSH01~
+      OUTER_TEXT_SPRINT clab_base_out ~CLABSH~
+    END
+    DEFAULT
+  END
+
+  ACTION_IF (num_classes > 0) BEGIN
+    // determining available xp levels for CLAB table
+    COPY_EXISTING ~xplevel.2da~ ~override~
+      COUNT_2DA_COLS num_levels
+      SET num_levels -= 2 // reduce by row header and limit columns
+    BUT_ONLY
+
+    // getting kit CLAB
+    ACTION_IF (NOT ~%kit_name%~ STR_EQ ~TRUECLASS~) BEGIN
+      COPY_EXISTING ~kitlist.2da~ ~override~
+        SET found = 0
+        READ_2DA_ENTRIES_NOW table 1
+        FOR (row = 3; row < table; ++row) BEGIN
+          READ_2DA_ENTRY_FORMER table row 1 name
+          PATCH_IF (~%name%~ STR_EQ ~%kit_name%~) BEGIN
+            READ_2DA_ENTRY_FORMER table row 5 clab
+            READ_2DA_ENTRY_FORMER table row 8 class_id
+            FOR (i = 1; i <= num_classes; ++i) BEGIN
+              PATCH_IF (class_id = EVAL ~class_%i%~) BEGIN
+                TEXT_SPRINT EVAL ~clab_%i%~ ~%clab%~
+                SET found = 1
+              END
+            END
+            SET row = table
+          END
+        END
+        PATCH_IF (NOT found) BEGIN
+          PATCH_WARN ~WARNING: Ability table not found for kit [%kit_name%]. Using parent class table instead.~
+        END
+      BUT_ONLY
+    END
+
+    ACTION_IF (num_classes = 1) BEGIN
+      // Single class: just return class or kit CLAB resref
+      OUTER_TEXT_SPRINT resref ~%clab_1%~
+      ACTION_IF (FILE_EXISTS_IN_GAME ~%resref%.2DA~) BEGIN
+        OUTER_SET success = 1
+      END ELSE BEGIN
+        // generating empty CLAB
+        OUTER_TEXT_SPRINT default ~****~
+        OUTER_TEXT_SPRINT columns ~~
+        OUTER_FOR (i = 1; i <= num_levels; ++i) BEGIN
+          OUTER_TEXT_SPRINT columns ~%columns% %i%~
+          OUTER_TEXT_SPRINT row ~%row% ****~
+        END
+        OUTER_SET items = 6
+        OUTER_FOR (i = 0; i < items; ++i) BEGIN
+          OUTER_SET idx = i + 1
+          OUTER_TEXT_SPRINT $items(~%i%~) ~ABILITY%idx% %row%~
+        END
+        LAF a7#add_kit_ex#create_2da
+          STR_VAR resref default columns items
+          RET success
+        END
+      END
+    END ELSE BEGIN
+      // Multiclass: return merged CLAB resref
+      // finding available output CLAB slot
+      OUTER_FOR (i = 1; i < 100; ++i) BEGIN
+        ACTION_IF (i < 10) BEGIN
+          OUTER_TEXT_SPRINT tmp_name ~%clab_base_out%0%i%~
+        END ELSE BEGIN
+          OUTER_TEXT_SPRINT tmp_name ~%clab_base_out%%i%~
+        END
+        ACTION_IF (NOT FILE_EXISTS_IN_GAME ~%tmp_name%.2DA~) BEGIN
+          OUTER_TEXT_SPRINT resref ~%tmp_name%~
+          OUTER_SET i = 100
+        END
+      END
+      // merging all specified clab_x resrefs into single output CLAB
+      ACTION_IF (NOT ~%resref%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#merge_clabs
+          STR_VAR clab_1 clab_2 clab_3 resref
+          RET success
+        END
+      END
     END
   END
 END
@@ -824,23 +1211,18 @@ BEGIN
         END
       END
     END
-    // Try class second (consider only single-class CLABs)
+    // Try class second (consider single and multiclass CLABs)
     ACTION_IF (~%clab%~ STR_EQ ~~) BEGIN
       OUTER_SET class_id = IDS_OF_SYMBOL(~class~ ~%name%~)
-      ACTION_IF (class_id > 0) BEGIN
-        ACTION_MATCH class_id WITH
-          1 19 BEGIN OUTER_TEXT_SPRINT clab ~CLABMA01~ END  // mage, sorcerer
-          2 BEGIN OUTER_TEXT_SPRINT clab ~CLABFI01~ END // fighter
-          3 BEGIN OUTER_TEXT_SPRINT clab ~CLABPR01~ END // cleric
-          4 BEGIN OUTER_TEXT_SPRINT clab ~CLABTH01~ END // thief
-          5 BEGIN OUTER_TEXT_SPRINT clab ~CLABBA01~ END // bard
-          6 BEGIN OUTER_TEXT_SPRINT clab ~CLABPA01~ END // paladin
-          11 BEGIN OUTER_TEXT_SPRINT clab ~CLABDR01~ END  // druid
-          12 BEGIN OUTER_TEXT_SPRINT clab ~CLABRN01~ END  // ranger
-          20 BEGIN OUTER_TEXT_SPRINT clab ~CLABMO01~ END  // monk
-          21 BEGIN OUTER_TEXT_SPRINT clab ~CLABSH01~ END  // shaman
-          DEFAULT
-        END
+      LAF a7#add_kit_ex#create_clab
+        INT_VAR
+          kit_class = class_id
+        RET
+          resref
+          success
+      END
+      ACTION_IF (success) BEGIN
+        OUTER_TEXT_SPRINT clab ~%resref%~
       END
     END
   END
