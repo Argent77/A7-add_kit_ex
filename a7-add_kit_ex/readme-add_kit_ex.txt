@@ -11,7 +11,8 @@ Overview
 ~~~~~~~~
 
 This is an action function for WeiDU. It aims at unifying WeiDU's built-in functions ADD_KIT and COPY_KIT as well as
-the complementary function fl#add_kit_ee which handled the EE-specific aspects.
+the complementary functions fl#add_kit_ee, which handles the EE-specific aspects, and qd_multiclass, which handles true
+multiclass kits.
 
 
 Description
@@ -73,6 +74,11 @@ STR_VAR clab_path       (optional) The path to the CLAB-style 2DA file of your k
 STR_VAR kittable        (optional) List of which class and race combinations the kit should be available for, as per
                         kittable.2da. Omit to make kit available for all races. Use parameter "visible" instead if you
                         want to make the kit unavailable for all races during character creation.
+STR_VAR base_class      (optional, EE-only, multiclass kits only) This parameter indicates which class the kit abilities
+                        will be tied to by default. See more details in the "Multiclass Kits" chapter below.
+                        The following single-letter class tokens are supported: [F]ighter, [P]riest, [D]ruid, [R]anger,
+                        [M]age and [T]hief. Omit this argument to have the function pick an appropriate base class
+                        automatically.
 STR_VAR clsrcreq        (optional, EE-only) 2DA string added to clsrcreq.2da.
 STR_VAR clswpbon        (optional, EE-only) 2DA string added to clswpbon.2da.
 STR_VAR hpclass         (optional, EE-only) 2DA string added to hpclass.2da. If this string references a custom 2DA
@@ -107,10 +113,44 @@ INT_VAR __kits_base_value       The kit base value added to "kit_id" when added 
                                 Default: 0x4000
 
 
+Multiclass Kits
+~~~~~~~~~~~~~~~
+
+Enhanced Edition games since version 2.0 allow you to create true multiclass kits. However, the way how multiclass kits
+are handled by the game engine requires additional effort to properly deal with kit-specific abilities.
+
+The ADD_KIT_EX parameter "base_class" can be used to control which class aspect of a multiclass kit is used to apply
+kit-specific abilities, which means that abilities are only applied when that specific class increases in levels.
+For this reason it is necessary to specify a class aspect that is covered by the kit's parent multiclass.
+
+The following single-letter class tokens are supported: F (for Fighter class), P (for Priest class), D (for Druid class),
+R (for Ranger class), M (for Mage class) and T (for Thief class). Alternatively, specify one of the symbolic class
+names: FIGHTER, CLERIC, DRUID, RANGER, MAGE or THIEF. Numeric class values are supported as well.
+
+It is also possible to override the base class by preceding CLAB table entries with a class token. This token allows
+you to fine-tune which ability will be applied by which class at level up. For example, to specifically assign the CLAB
+entry "GA_SPCL423" to the thief class aspect (e.g. of a multiclass Fighter/Thief kit), precede it with "T" to create
+"TGA_SPCL423".
+
+This feature is very versatile, and can be used in a variety of scenarios. Some of the things it can do include:
+- giving a kit to a multiclass character at character creation (e.g. Swashbuckler/Mage).
+- allowing a multiclass character to have one kit for each of their classes (e.g. a Berserker/Priest of Talos).
+- allowing modders to implement their own multiclass kits that have abilities tied to each of the base classes
+  (e.g. the Bladesinger Fighter/Mage kit).
+- allowing a single- or multiclass character to gain the benefits of multiple kits of the same class.
+
+Limitations:
+Only benefits granted by the class ability table are considered. Item restrictions, inherent abilities of specialist
+mages or other effects tied to the kit's usability flags are not covered.
+
+Due to the length restrictions on internal names, the function can only include abilities that have internal names
+of 7 characters or less. Abilities with internal names of 8 characters (or more) will be skipped with warnings.
+
+
 Usage
 ~~~~~
 
-Launch ADD_KIT_EX via LAUNCH_ACTION_FUNCTION (or short: LAF) and specify the parameter you want to have set or changed.
+Launch ADD_KIT_EX via LAUNCH_ACTION_FUNCTION (or short: LAF) and specify the parameters you want to have set or changed.
 
 Example of a minimalistic kit definition:
 LAUNCH_ACTION_FUNCTION ADD_KIT_EX
@@ -133,6 +173,9 @@ returned by the "kit_id" parameter.
 
 Changelog
 ~~~~~~~~~
+
+v0.3.0:
+- Added full multiclass kit support for Enhanced Edition games
 
 v0.2.0:
 - Fixed kit limit check
