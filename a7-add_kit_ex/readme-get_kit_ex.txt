@@ -76,6 +76,9 @@ RET bdstweap        (EE-only) 2DA string from bdstweap.2da.
 Changelog
 ~~~~~~~~~
 
+v0.3.0:
+- Added full multiclass kit support for Enhanced Edition 2.0+ games
+
 v0.2.0:
 - Fixed kit limit check
 - Improved GemRB and TobEx checks

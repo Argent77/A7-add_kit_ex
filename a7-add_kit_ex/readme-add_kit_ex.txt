@@ -175,7 +175,7 @@ Changelog
 ~~~~~~~~~
 
 v0.3.0:
-- Added full multiclass kit support for Enhanced Edition games
+- Added full multiclass kit support for Enhanced Edition 2.0+ games
 
 v0.2.0:
 - Fixed kit limit check
