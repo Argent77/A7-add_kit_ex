@@ -69,8 +69,8 @@ STR_VAR dualclas        (optional) 2DA string added to dualclas.2da.
 STR_VAR luabbr          (optional) 2DA string added to luabbr.2da.
 STR_VAR stweap          (optional) 2DA string added to 25stweap.2da.
 STR_VAR clab_path       (optional) The path to the CLAB-style 2DA file of your kit. File is installed and reference is
-                        added to kitlist.2da. Omit to inherit the CLAB of specified source kit or parent class instead
-                        which may be created dynamically if needed (e.g. for multiclass kits).
+                        added to kitlist.2da. Omit to inherit CLAB of the specified source kit or parent class (single
+                        class only) instead.
 STR_VAR kittable        (optional) List of which class and race combinations the kit should be available for, as per
                         kittable.2da. Omit to make kit available for all races. Use parameter "visible" instead if you
                         want to make the kit unavailable for all races during character creation.
