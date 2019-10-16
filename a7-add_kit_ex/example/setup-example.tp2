@@ -3,8 +3,13 @@ AUTHOR ~Argent77~
 VERSION ~1.0~
 
 
-BEGIN ~ADD_KIT_EX: Add new kit~
+BEGIN ~ADD_KIT_EX: Add new single-class kit~
 INCLUDE ~%MOD_FOLDER%/lib/kit_example.tph~
+
+
+BEGIN ~ADD_KIT_EX: Add new multi-class kit~
+REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~ && FILE_EXISTS ~engine.lua~) ~Requires Enhanced Edition 2.0+ game.~
+INCLUDE ~%MOD_FOLDER%/lib/kit_example4.tph~
 
 
 BEGIN ~ADD_KIT_EX: Copy existing kit~

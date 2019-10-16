@@ -1,0 +1,73 @@
+// *** Test: add new multiplayer kit (EE 2.0+ only) ***
+
+INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
+
+// CLAB table for the new multiclass kit:
+// Entries in the ABILITY4 row override the default "base_class" parameter specified in the
+// ADD_KIT_EX function call to be granted when the character gains fighter class levels instead.
+ACTION_IF (GAME_IS ~iwdee~) BEGIN
+<<<<<<<< .../example/inlined/QDCLABSN.2DA
+2DA         V1.0
+****
+            1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36          37          38          39          40
+ABILITY1    AP_SPCL421  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        ****        ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****
+ABILITY2    GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****
+ABILITY3    GA_SPCL423  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        GA_SPCL423  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+ABILITY4    ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142
+ABILITY5    ****        ****        ****        ****        ****        ****        AP_#EVASION ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+>>>>>>>>
+END ELSE BEGIN
+<<<<<<<< .../example/inlined/QDCLABSN.2DA
+2DA V1.0
+****
+            1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36          37          38          39          40
+ABILITY1    AP_SPCL421  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        AP_SPCL332  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****        GA_SPCL423  ****        ****        ****
+ABILITY2    GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  AP_SPCL332  ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****        GA_SPCL412  ****        ****        ****        ****
+ABILITY3    GA_SPCL423  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        GA_SPCL423  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+ABILITY4    ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142 ****        ****        ****        FAP_SPCL141 ****        ****        ****        FAP_SPCL142
+ABILITY5    ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+>>>>>>>>
+END
+COPY ~.../example/inlined/QDCLABSN.2DA~ ~override~
+
+// Note: Parent class values are used for omitted parameters
+LAF ADD_KIT_EX
+  INT_VAR
+    kit_class     = 9   // Fighter/Thief
+    mixed         = RESOLVE_STR_REF(~Spy~)
+    lower         = RESOLVE_STR_REF(~spy~)
+    help          = RESOLVE_STR_REF(~SPY: (Spy kit description...)~)
+    // EE-specific arguments
+    briefdesc     = RESOLVE_STR_REF(~SPY: (Spy kit description...)~)
+  STR_VAR
+    kit_name      = ~XX_SPY~
+    unusable      = ~0x00040000~
+    // clasweap      = ~1 1 1 1 1 1 1 1~
+    weapprof      = ~2 5 2 2 2 2 2 2 2 2 5 2 2 2 5 5 2 2 2 2 2 2 2 2 2 2 5 2 2 2 2 3~
+    // abclasrq      = ~9 9 0 0 0 0~
+    abclsmod      = ~-1 1 0 0 0 0~
+    // alignmnt      = ~0 1 1 1 1 1 1 1 1~
+    // dualclas      = ~0 0 0 0 0 0~
+    // luabbr        = ~FT0~
+    stweap        = ~LEAT14 * HELM07 BAG25 RING06 RING31 CLCK02 BOOT02 AMUL19 BRAC16 BELT06 AROW11,40 DART02,40 DART03,20 POTN52,5 POTN04,2 POTN14,5 DAGG12 SW1H28 STAF08~
+    clab_path     = ~override/QDCLABSN.2DA~
+    // kittable      = ~K_FT_H K_FT_D K_FT_G K_FT_E K_FT_HE K_FT_HL K_FT_HO~
+    base_class    = ~T~ // use thief base class for multiclass kit (can by overridden on a per CLAB entry basis; see entries in the CLAB table row "ABILITY4" above)
+    // EE-specific arguments
+    // clsrcreq      = ~0 1 1 1 1 1 1~
+    // clswpbon      = ~1 0 2~
+    // hpclass       = ~HPFT~
+    // numwslot      = ~2~
+    clascolr      = ~182 182 136 184 142~
+    // thiefscl      = ~100 100 100 100 100 100 100 0~
+    // backstab      = ~1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5~
+    // sneakatt      = ~1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5 6 6 6 6 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11~
+    // crippstr      = ~0 0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 5 6 6 6 6 7 7 7 7 8 8 8 8 9 9 9 9~
+    thiefskl      = ~40 20~
+    // traplimt      = ~6~
+    bdstweap      = ~LEAT05 * HELM01 * RING06 * * * * BRAC09 BELT02 AROW02,40 DART02,40 DART03,20 POTN08,5 POTN17,3 * DAGG02 SW1H08 STAF02~
+  RET
+    kit_id
+END
+
+PRINT ~XX_SPY kit value = %kit_id%~

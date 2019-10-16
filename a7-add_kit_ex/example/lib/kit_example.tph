@@ -3,10 +3,25 @@
 INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
 
 ACTION_IF GAME_IS ~iwdee~ BEGIN
-  OUTER_TEXT_SPRINT game ~iwd~
+<<<<<<<< .../example/inlined/CLABMFI1.2DA
+2DA        V1.0
+****
+           1          2          3          4          5          6          7          8          9          10         11         12         13         14         15         16         17         18         19         20         21         22         23         24         25         26         27         28         29         30         31         32         33         34         35         36         37         38         39         40         41
+ABILITY1   GA_SPCL922 ****       AP_SPCL124 ****       ****       AP_SPCL124 ****       ****       AP_SPCL124 ****       ****       AP_SPCL124 ****       ****       AP_SPCL124 ****       ****       AP_SPCL124 ****       ****       ****       ****       AP_SPCL124 ****       ****       ****       ****       AP_SPCL124 ****       ****       ****       ****       AP_SPCL124 ****       ****       ****       ****       ****       ****       ****       ****
+ABILITY2   ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       GA_SPCL121 ****       ****       ****       ****       ****       ****       ****       ****
+ABILITY3   ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****       ****
+>>>>>>>>
 END ELSE BEGIN
-  OUTER_TEXT_SPRINT game ~bg~
+<<<<<<<< .../example/inlined/CLABMFI1.2DA
+2DA V1.0
+****
+            1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20         21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36          37          38          39          40
+ABILITY1    ****        ****        AP_SPCL122  ****        ****        AP_SPCL122  ****        ****        AP_SPCL122  ****        ****        AP_SPCL122  ****        ****        AP_SPCL122  ****        ****        AP_SPCL122  ****        ****       ****        ****        AP_SPCL122  ****        ****        ****        ****        AP_SPCL122  ****        ****        ****        ****        AP_SPCL122  ****        ****        ****        ****        ****        ****        ****        ****
+ABILITY2    ****        ****        ****        GA_SPCL121  ****        ****        ****        GA_SPCL121  ****        ****        ****        GA_SPCL121  ****        ****        ****        GA_SPCL121  ****        ****        ****        GA_SPCL121 ****        ****        ****        GA_SPCL121  ****        ****        ****        GA_SPCL121  ****        ****        ****        GA_SPCL121  ****        ****        ****        ****        ****        ****        ****        ****
+ABILITY3    ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****       ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****
+>>>>>>>>
 END
+COPY ~.../example/inlined/CLABMFI1.2DA~ ~override~
 
 // Note: Parent class values are used for omitted parameters
 LAF ADD_KIT_EX
@@ -30,7 +45,7 @@ LAF ADD_KIT_EX
     // dualclas      = ~0 1 1 1 1 0~
     // luabbr        = ~Fi0~
     stweap        = ~LEAT14 * HELM07 BAG20 RING06 RING31 CLCK02 BOOT01 AMUL19 BRAC16 BELT06 AROW11,40 BULL03,40 BOLT06,40 POTN52,5 POTN04,2 POTN14,5 BOW18 XBOW09 STAF08~
-    clab_path     = EVAL ~%MOD_FOLDER%/kit/%game%/CLABMFI1.2DA~
+    clab_path     = ~override/CLABMFI1.2DA~
     // kittable      = ~K_F_H K_F_D K_F_G K_F_E K_F_HE K_F_HL K_F_HO~
     // EE-specific arguments
     // clsrcreq      = ~1 1 1 1 1 1 1~
