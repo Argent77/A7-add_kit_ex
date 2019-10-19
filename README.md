@@ -43,7 +43,7 @@ STR_VAR alignmnt       | *(optional)* 2DA string added to alignmnt.2da.
 STR_VAR dualclas       | *(optional)* 2DA string added to dualclas.2da.
 STR_VAR luabbr         | *(optional)* 2DA string added to luabbr.2da.
 STR_VAR stweap         | *(optional)* 2DA string added to 25stweap.2da.
-STR_VAR clab_path      | *(optional)* The path to the CLAB-style 2DA file of your kit. File is installed and reference is added to kitlist.2da. Omit to inherit the CLAB of specified source kit or parent class instead which may be created dynamically if needed (e.g. for multiclass kits).
+STR_VAR clab_path      | *(optional)* Path to the CLAB-style 2DA file of your kit. File is installed and reference is added to kitlist.2da. Specify filename without path to use an existing game resource instead. Omit to inherit the CLAB of the specified source kit or parent class (single class kit only).
 STR_VAR kittable       | *(optional)* List of which class and race combinations the kit should be available for, as per kittable.2da. Omit to make kit available for all races. Use parameter "visible" instead if you want to make the kit unavailable for all races during character creation.
 STR_VAR base_class     | *(optional, EE-only, multiclass kits only)* This parameter indicates which class the kit abilities will be tied to by default. See more details in the "Multiclass Kits" chapter below. The following single-letter class tokens are supported: [F]ighter, [P]riest, [D]ruid, [R]anger, [M]age and [T]hief.<br/>Omit this argument to have the function pick an appropriate base class automatically.
 STR_VAR clsrcreq       | *(optional, EE-only)* 2DA string added to clsrcreq.2da.
