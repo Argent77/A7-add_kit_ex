@@ -1483,41 +1483,45 @@ BEGIN
                     DELETE_BYTES 0 1
                   END
                 END
-                LPF SUBSTRING INT_VAR start = 0 length = 3 STR_VAR string = EVAL ~%ability%~ RET abil_type = substring END
-                SET length = (STRING_LENGTH ~%ability%~) - 3
-                LPF SUBSTRING INT_VAR start = 3 length STR_VAR string = EVAL ~%ability%~ RET abil_new = substring END
-                PATCH_IF (length < 8) BEGIN
-                  DEFINE_ASSOCIATIVE_ARRAY abil_types BEGIN
-                    ~AP_~ => ~QD_MC_AP~
-                    ~GA_~ => ~QD_MC_GA~
-                  END
-                  PATCH_IF (VARIABLE_IS_SET $abil_types(~%abil_type%~)) BEGIN
-                    // mark base class CLAB for update
-                    SET $token_cache(~%class_token%~) = 1
+                PATCH_IF (STRING_LENGTH ~%ability%~ > 3) BEGIN
+                  LPF SUBSTRING INT_VAR start = 0 length = 3 STR_VAR string = EVAL ~%ability%~ RET abil_type = substring END
+                  SET length = (STRING_LENGTH ~%ability%~) - 3
+                  LPF SUBSTRING INT_VAR start = 3 length STR_VAR string = EVAL ~%ability%~ RET abil_new = substring END
+                  PATCH_IF (length < 8) BEGIN
+                    DEFINE_ASSOCIATIVE_ARRAY abil_types BEGIN
+                      ~AP_~ => ~QD_MC_AP~
+                      ~GA_~ => ~QD_MC_GA~
+                    END
+                    PATCH_IF (VARIABLE_IS_SET $abil_types(~%abil_type%~)) BEGIN
+                      // mark base class CLAB for update
+                      SET $token_cache(~%class_token%~) = 1
 
-                    // granted abilities or bonuses
-                    TEXT_SPRINT qdmc_eff_resref $abil_types(~%abil_type%~)
-                    INNER_ACTION BEGIN
-                      COPY ~.../a7-add_kit_ex/inlined/%qdmc_eff_resref%.EFF~ ~override/%abil_new%#.EFF~
-                        WRITE_ASCIIE 0x30 ~%abil_new%~ (8)
-                        SET col_length = STRING_LENGTH ~%col%~
-                      ACTION_IF (col < 10) BEGIN
-                        OUTER_TEXT_SPRINT qdmc_spl_resref ~QD_MC%class_token%0%col%~
-                      END ELSE BEGIN
-                        OUTER_TEXT_SPRINT qdmc_spl_resref ~QD_MC%class_token%%col%~
-                      END
-                      LAF a7#add_kit_ex#ensure_qdmc_spl STR_VAR base_class = EVAL ~%class_token%~ END
-                      COPY_EXISTING ~%qdmc_spl_resref%.SPL~ ~override~
-                        LPF ADD_SPELL_EFFECT
-                          INT_VAR insert_point = 0 opcode = 177 target = 1 timing = 9 resist_dispel = 0 power = 0 parameter1 = kit_id parameter2 = 9
-                          STR_VAR resource = EVAL ~%abil_new%#~
+                      // granted abilities or bonuses
+                      TEXT_SPRINT qdmc_eff_resref $abil_types(~%abil_type%~)
+                      INNER_ACTION BEGIN
+                        COPY ~.../a7-add_kit_ex/inlined/%qdmc_eff_resref%.EFF~ ~override/%abil_new%#.EFF~
+                          WRITE_ASCIIE 0x30 ~%abil_new%~ (8)
+                          SET col_length = STRING_LENGTH ~%col%~
+                        ACTION_IF (col < 10) BEGIN
+                          OUTER_TEXT_SPRINT qdmc_spl_resref ~QD_MC%class_token%0%col%~
+                        END ELSE BEGIN
+                          OUTER_TEXT_SPRINT qdmc_spl_resref ~QD_MC%class_token%%col%~
                         END
+                        LAF a7#add_kit_ex#ensure_qdmc_spl STR_VAR base_class = EVAL ~%class_token%~ END
+                        COPY_EXISTING ~%qdmc_spl_resref%.SPL~ ~override~
+                          LPF ADD_SPELL_EFFECT
+                            INT_VAR insert_point = 0 opcode = 177 target = 1 timing = 9 resist_dispel = 0 power = 0 parameter1 = kit_id parameter2 = 9
+                            STR_VAR resource = EVAL ~%abil_new%#~
+                          END
+                      END
+                    END ELSE BEGIN
+                      PATCH_WARN ~WARNING: Could not evaluate kit ability entry [%ability%]. Skipping.~
                     END
                   END ELSE BEGIN
-                    PATCH_WARN ~WARNING: Could not evaluate kit ability entry [%ability%]. Skipping.~
+                    PATCH_WARN ~WARNING: Internal ability name too long [%abil_new%]. Skipping.~
                   END
                 END ELSE BEGIN
-                  PATCH_WARN ~WARNING: Internal ability name too long [%abil_new%]. Skipping.~
+                  PATCH_WARN ~WARNING: Could not evaluate kit ability entry [%ability%]. Skipping.~
                 END
               END
             END
