@@ -585,38 +585,33 @@ BEGIN
   OUTER_TEXT_SPRINT hex ~~
   ACTION_IF (min_digits < 0) BEGIN OUTER_SET min_digits = 0 END
 
-  // simplify conversion by temporarily removing sign
-  OUTER_SET signed = INDEX(~-~ ~%number%~) = 0 ? 1 : 0
-  ACTION_IF (signed) BEGIN
-    OUTER_PATCH_SAVE number ~%number%~ BEGIN DELETE_BYTES 0 1 END
+  // preparations
+  OUTER_SET signed = 0
+  OUTER_PATCH_SAVE number ~%number%~ BEGIN
+    // trimming whitespace
+    REPLACE_TEXTUALLY ~^[ %TAB%%WNL%]*\([^ %TAB%%WNL%]*\)[ %TAB%%WNL%]*$~ ~\1~
+    // simplify conversion by temporarily removing sign
+    PATCH_IF (SIGN = BYTE_AT 0) BEGIN
+      SET signed = 1
+      DELETE_BYTES 0 1
+    END
   END
 
-  ACTION_IF (~%number%~ STRING_MATCHES_REGEXP ~0x[0-9a-f]+$~ = 0) BEGIN
-    // hex format
-    OUTER_PATCH_SAVE hex ~%number%~ BEGIN
-      PATCH_IF (BUFFER_LENGTH >= 2) BEGIN
-        READ_ASCII 0 s (2)
-        PATCH_IF (~%s%~ STR_EQ ~0x~) BEGIN DELETE_BYTES 0 2 END
-      END
-    END
-  END ELSE ACTION_IF (~%number%~ STRING_MATCHES_REGEXP ~\(0\|\([1-9][0-9]*\)\)$~ = 0) BEGIN
-    // decimal format
+  ACTION_IF (IS_AN_INT ~number~) BEGIN
+    // value is within supported numeric range
+    OUTER_PATCH ~~ BEGIN SPRINTF hex ~%x~ (number) END
+    // hex prefix is added later
+    OUTER_PATCH_SAVE hex ~%hex%~ BEGIN DELETE_BYTES 0 2 END
+  END ELSE ACTION_IF (~%number%~ STRING_MATCHES_REGEXP ~0x[0-9a-f]+$~ = 0) BEGIN
+    // hex number is outside of supported numeric range
+    OUTER_PATCH_SAVE hex ~%number%~ BEGIN DELETE_BYTES 0 2 END
+  END ELSE ACTION_IF (~%number%~ STRING_MATCHES_REGEXP ~[1-9][0-9]*$~ = 0) BEGIN
+    // decimal number is outside of supported numeric range
     ACTION_DEFINE_ARRAY digits BEGIN ~0~ ~1~ ~2~ ~3~ ~4~ ~5~ ~6~ ~7~ ~8~ ~9~ ~A~ ~B~ ~C~ ~D~ ~E~ ~F~ END
-    ACTION_IF (IS_AN_INT ~number~) BEGIN
-      // Fast calculation
-      OUTER_WHILE (number > 0) BEGIN
-        OUTER_SET d = number & 0xf
-        OUTER_TEXT_SPRINT s $digits(~%d%~)
-        OUTER_TEXT_SPRINT hex ~%s%%hex%~
-        OUTER_SET number >>= 4
-      END
-    END ELSE BEGIN
-      // Expensive calculation
-      OUTER_WHILE (NOT ~%number%~ STR_EQ ~0~) BEGIN
-        LAF a7#add_kit_ex#divide INT_VAR divisor = 16 STR_VAR number RET number = quotient remainder END
-        OUTER_TEXT_SPRINT s $digits(~%remainder%~)
-        OUTER_TEXT_SPRINT hex ~%s%%hex%~
-      END
+    OUTER_WHILE (NOT ~%number%~ STR_EQ ~0~) BEGIN
+      LAF a7#add_kit_ex#divide INT_VAR divisor = 16 STR_VAR number RET number = quotient remainder END
+      OUTER_TEXT_SPRINT s $digits(~%remainder%~)
+      OUTER_TEXT_SPRINT hex ~%s%%hex%~
     END
   END ELSE BEGIN
     // invalid format
@@ -1056,9 +1051,9 @@ BEGIN
       STR_VAR number = EVAL ~%unusable%~
       RET unusable = hex
     END
-    ACTION_IF (~%hex%~ STR_EQ ~~) BEGIN
+    ACTION_IF (~%unusable%~ STR_EQ ~~) BEGIN
       FAIL ~Invalid argument "unusable".~
-    END ELSE ACTION_IF (STRING_LENGTH ~%hex%~ > 8) BEGIN
+    END ELSE ACTION_IF (STRING_LENGTH ~%unusable%~ > 8) BEGIN
       FAIL ~Argument "unusable" is out of range.~
     END
     OUTER_TEXT_SPRINT unusable ~0x%unusable%~
