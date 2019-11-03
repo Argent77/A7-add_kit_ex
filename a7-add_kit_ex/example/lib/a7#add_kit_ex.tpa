@@ -240,6 +240,7 @@ STR_VAR
   resref = ~~     // 2da resref
   clone1 = ~~     // primary entry to clone if no array available
   clone2 = ~~     // secondary entry to clone if no array available
+  clone3 = ~~     // tertiary entry to clone if no array available
 RET success       // returns whether an entry was actually added
 BEGIN
   OUTER_SET success = 0
@@ -312,6 +313,7 @@ BEGIN
         array = ~items~
         resref
         clone1 = EVAL ~%clone2%~
+        clone2 = EVAL ~%clone3%~
       RET success
     END
   END
@@ -326,6 +328,7 @@ STR_VAR
   resref = ~~     // 2da resref
   clone1 = ~~     // primary entry to clone if no array available
   clone2 = ~~     // secondary entry to clone if no array available
+  clone3 = ~~     // tertiary entry to clone if no array available
 RET success       // returns whether an entry was actually added
 BEGIN
   OUTER_SET success = 0
@@ -388,6 +391,7 @@ BEGIN
         array = ~items~
         resref
         clone1 = EVAL ~%clone2%~
+        clone2 = EVAL ~%clone3%~
       RET success
     END
   END
@@ -712,8 +716,9 @@ END
 
 // Validate and normalize kit name
 DEFINE_ACTION_FUNCTION a7#add_kit_ex#validate_kitname
-STR_VAR kit_name = ~~
-        param_name = ~kit_name~
+STR_VAR
+  kit_name = ~~
+  param_name = ~kit_name~
 RET kit_name
 BEGIN
   // stripping whitespace
@@ -862,6 +867,7 @@ STR_VAR
   string = ~~         // content of the new entry
   clone1 = ~~         // primary clone from this entry if string is empty
   clone2 = ~~         // secondary clone from this entry if string is empty
+  clone3 = ~~         // tertiary entry to clone if no array available
 RET success
 BEGIN
   OUTER_SET success = 0
@@ -874,6 +880,7 @@ BEGIN
         resref
         clone1
         clone2
+        clone3
       RET success
     END
     ACTION_IF (success) BEGIN
@@ -896,6 +903,7 @@ STR_VAR
   string = ~~         // content of the new entry
   clone1 = ~~         // primary clone from this entry if string is empty
   clone2 = ~~         // secondary clone from this entry if string is empty
+  clone3 = ~~         // tertiary entry to clone if no array available
 RET success resref
 BEGIN
   COPY_EXISTING ~campaign.2da~ ~override~
@@ -911,7 +919,7 @@ BEGIN
   BUT_ONLY IF_EXISTS
 
   LAF a7#add_kit_ex#add_25stweap
-    STR_VAR kit_name resref string clone1 clone2
+    STR_VAR kit_name resref string clone1 clone2 clone3
     RET success
   END
 END
@@ -1784,6 +1792,24 @@ BEGIN
     LAF a7#add_kit_ex#to_hex INT_VAR min_digits = 0 STR_VAR number = EVAL ~%kit_number_full%~ RET kit_number_full_hex = hex END
     APPEND ~kit.ids~ ~%kit_number_full_hex% %kit_name%~ UNLESS ~[ %TAB%%WNL%]%kit_name%[ %TAB%%WNL%]~
 
+    // preparing kit/class lookup preference
+    OUTER_TEXT_SPRINT clone1 ~%source_kit%~
+    OUTER_TEXT_SPRINT clone2 ~%kit_class_name%~
+    OUTER_TEXT_SPRINT clone3 ~~
+    ACTION_IF (is_multiclass) BEGIN
+      ACTION_DEFINE_ASSOCIATIVE_ARRAY token_to_class_name BEGIN
+        ~D~ => ~DRUID~
+        ~F~ => ~FIGHTER~
+        ~M~ => ~MAGE~
+        ~P~ => ~CLERIC~
+        ~R~ => ~RANGER~
+        ~T~ => ~THIEF~
+      END
+      ACTION_IF (VARIABLE_IS_SET $token_to_class_name(~%base_class%~)) BEGIN
+        OUTER_TEXT_SPRINT clone3 $token_to_class_name(~%base_class%~)
+      END
+    END
+
     // adding rows verbatim
     ACTION_FOR_EACH resref IN ~clasweap~ ~abclasrq~ ~abclsmod~ ~abdcdsrq~ ~abdcscrq~ ~dualclas~ ~alignmnt~ ~luabbr~ BEGIN
       LAF a7#add_kit_ex#split STR_VAR string = EVAL EVAL ~%%resref%%~ RET items RET_ARRAY items END
@@ -1792,8 +1818,9 @@ BEGIN
           kit_name
           array = ~items~
           resref
-          clone1 = EVAL ~%source_kit%~
-          clone2 = EVAL ~%kit_class_name%~
+          clone1
+          clone2
+          clone3
         RET success
       END
       ACTION_IF (success) BEGIN
@@ -1810,8 +1837,9 @@ BEGIN
           kit_name
           array = ~items~
           resref
-          clone1 = EVAL ~%source_kit%~
-          clone2 = EVAL ~%kit_class_name%~
+          clone1
+          clone2
+          clone3
         RET success
       END
       ACTION_IF (success) BEGIN
@@ -1868,8 +1896,9 @@ BEGIN
       STR_VAR
         kit_name
         string = EVAL ~%stweap%~
-        clone1 = EVAL ~%source_kit%~
-        clone2 = EVAL ~%kit_class_name%~
+        clone1
+        clone2
+        clone3
       RET success
     END
     ACTION_IF (success) BEGIN
@@ -1881,8 +1910,9 @@ BEGIN
         STR_VAR
           kit_name
           string = EVAL ~%bdstweap%~
-          clone1 = EVAL ~%source_kit%~
-          clone2 = EVAL ~%kit_class_name%~
+          clone1
+          clone2
+          clone3
         RET success resref
       END
       ACTION_IF (success) BEGIN
@@ -1979,12 +2009,13 @@ BEGIN
 
       // adding rows verbatim
       ACTION_FOR_EACH resref IN ~clsrcreq~ ~clswpbon~ ~hpclass~ ~numwslot~ BEGIN
-        OUTER_TEXT_SPRINT clone1 ~~
-        OUTER_TEXT_SPRINT clone2 ~~
+        OUTER_TEXT_SPRINT clone_special1 ~~
+        OUTER_TEXT_SPRINT clone_special2 ~~
         ACTION_IF (NOT ~%source_kit%~ STR_EQ ~~ && FILE_CONTAINS_EVALUATED(~%resref%.2da~ ~[ %TAB%%WNL%]%source_kit%[ %TAB%%WNL%]~)) BEGIN
-          OUTER_TEXT_SPRINT clone1 ~%source_kit%~
-        END ELSE ACTION_IF (FILE_CONTAINS_EVALUATED(~%resref%.2da~ ~[ %TAB%%WNL%]%kit_class_name%[ %TAB%%WNL%]~)) BEGIN
-          OUTER_TEXT_SPRINT clone2 ~%kit_class_name%~
+          OUTER_TEXT_SPRINT clone_special1 ~%source_kit%~
+        END
+        ACTION_IF (FILE_CONTAINS_EVALUATED(~%resref%.2da~ ~[ %TAB%%WNL%]%kit_class_name%[ %TAB%%WNL%]~)) BEGIN
+          OUTER_TEXT_SPRINT clone_special2 ~%kit_class_name%~
         END
         LAF a7#add_kit_ex#split STR_VAR string = EVAL EVAL ~%%resref%%~ RET items RET_ARRAY items END
         LAF a7#add_kit_ex#add_row
@@ -1992,8 +2023,9 @@ BEGIN
             kit_name
             array = ~items~
             resref
-            clone1
-            clone2
+            clone1 = EVAL ~%clone_special1%~
+            clone2 = EVAL ~%clone_special2%~
+            clone3
           RET success
         END
         ACTION_IF (success) BEGIN
@@ -2010,8 +2042,9 @@ BEGIN
             kit_name
             array = ~items~
             resref
-            clone1 = EVAL ~%source_kit%~
-            clone2 = EVAL ~%kit_class_name%~
+            clone1
+            clone2
+            clone3
           RET success
         END
         ACTION_IF (success) BEGIN
@@ -2027,13 +2060,14 @@ BEGIN
         DEFAULT OUTER_SET is_thief = 0
       END
       ACTION_FOR_EACH resref IN ~backstab~ ~thiefskl~ ~traplimt~ ~sneakatt~ ~crippstr~ BEGIN
-        OUTER_TEXT_SPRINT clone1 ~~
-        OUTER_TEXT_SPRINT clone2 ~~
+        OUTER_TEXT_SPRINT clone_special1 ~~
+        OUTER_TEXT_SPRINT clone_special2 ~~
         ACTION_IF (is_thief || (is_monk && ~%resref%~ STR_EQ ~thiefskl~)) BEGIN
           ACTION_IF (NOT ~%source_kit%~ STR_EQ ~~ && FILE_CONTAINS_EVALUATED(~%resref%.2da~ ~[ %TAB%%WNL%]%source_kit%[ %TAB%%WNL%]~)) BEGIN
-            OUTER_TEXT_SPRINT clone1 ~%source_kit%~
-          END ELSE ACTION_IF (FILE_CONTAINS_EVALUATED(~%resref%.2da~ ~[ %TAB%%WNL%]%kit_class_name%[ %TAB%%WNL%]~)) BEGIN
-            OUTER_TEXT_SPRINT clone2 ~%kit_class_name%~
+            OUTER_TEXT_SPRINT clone_special1 ~%source_kit%~
+          END
+          ACTION_IF (FILE_CONTAINS_EVALUATED(~%resref%.2da~ ~[ %TAB%%WNL%]%kit_class_name%[ %TAB%%WNL%]~)) BEGIN
+            OUTER_TEXT_SPRINT clone_special2 ~%kit_class_name%~
           END
         END
         LAF a7#add_kit_ex#split STR_VAR string = EVAL EVAL ~%%resref%%~ RET items RET_ARRAY items END
@@ -2042,8 +2076,9 @@ BEGIN
             kit_name
             array = ~items~
             resref
-            clone1
-            clone2
+            clone1 = EVAL ~%clone_special1%~
+            clone2 = EVAL ~%clone_special2%~
+            clone3
           RET success
         END
         ACTION_IF (success) BEGIN
