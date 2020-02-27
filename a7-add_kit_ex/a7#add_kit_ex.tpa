@@ -13,6 +13,34 @@ OUTER_SPRINT ADD_KIT_EX_VERSION ~0.3.0~
 >>>>>>>>
 
 
+// Print specified message as log entry, info, warning or error
+DEFINE_ACTION_FUNCTION a7#add_kit_ex#print_message
+INT_VAR severity = 1  // 0=LOG, 1=PRINT, 2=WARN, 3=FAIL
+STR_VAR msg = ~~
+BEGIN
+  ACTION_IF (NOT ~%msg%~ STR_EQ ~~) BEGIN
+    ACTION_IF (severity = 0) BEGIN
+      LOG ~%msg%~
+    END ELSE ACTION_IF (severity = 1) BEGIN
+      PRINT ~%msg%~
+    END ELSE ACTION_IF (severity = 2) BEGIN
+      WARN ~WARNING: %msg%~
+    END ELSE ACTION_IF (severity > 2) BEGIN
+      FAIL ~%msg%~
+    END
+  END
+END
+
+DEFINE_PATCH_FUNCTION a7#add_kit_ex#print_message
+INT_VAR severity = 1
+STR_VAR msg = ~~
+BEGIN
+  INNER_ACTION BEGIN
+    LAF a7#add_kit_ex#print_message INT_VAR severity STR_VAR msg END
+  END
+END
+
+
 // Split given string into individual items
 DEFINE_ACTION_FUNCTION a7#add_kit_ex#split
 INT_VAR offset = 0    // start index of array
@@ -566,10 +594,10 @@ BEGIN
         END
       END
     END ELSE BEGIN
-      WARN ~WARNING: Not a number [%number%]~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Not a number [%number%]~ END
     END
   END ELSE BEGIN
-    WARN ~WARNING: Division by zero is not allowed~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~Division by zero is not allowed~ END
   END
 END
 
@@ -619,7 +647,7 @@ BEGIN
     END
   END ELSE BEGIN
     // invalid format
-    WARN ~WARNING: Not a number [%number%]~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Not a number [%number%]~ END
   END
 
   // finalizing result
@@ -728,15 +756,15 @@ BEGIN
   END
 
   ACTION_IF (~%kit_name%~ STR_EQ ~~) BEGIN
-    FAIL ~Argument "%param_name%" must not be empty.~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Argument "%param_name%" must not be empty.~ END
   END
 
   ACTION_IF (STRING_LENGTH ~%kit_name%~ > 32) BEGIN
-    FAIL ~Length of argument "%param_name%" exceeds 32 characters.~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Length of argument "%param_name%" exceeds 32 characters.~ END
   END
 
   ACTION_IF (INDEX(~[0-9]~ ~%kit_name%~) = 0) || (INDEX(~[ %TAB%%WNL%*?/\]~ ~%kit_name%~) >= 0) BEGIN
-    FAIL ~Argument "%param_name%" contains invalid characters.~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Argument "%param_name%" contains invalid characters.~ END
   END
 END
 
@@ -989,7 +1017,7 @@ BEGIN
     ACTION_IF (items > 0) BEGIN
       OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~) ? 1 : 0
       ACTION_IF (items - adjust < min_count) BEGIN
-        WARN ~WARNING: Too few entries in argument "%resref%". Using defaults.~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Too few entries in argument "%resref%". Using defaults.~ END
       END
     END
   END
@@ -1000,7 +1028,7 @@ BEGIN
     OUTER_TEXT_SPRINT resref $items(~%i%~)
     ACTION_IF (~%resref%~ STRING_MATCHES_REGEXP ~K_[A-Z][A-Z]?_[A-Z][A-Z]?~ != 0 ||
                NOT FILE_CONTAINS_EVALUATED(~kittable.2da~ ~%resref%~)) BEGIN
-      WARN ~WARNING: Kittable entry "%resref%" is not valid. Skipping.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Kittable entry "%resref%" is not valid. Skipping.~ END
     END
   END
 
@@ -1041,11 +1069,11 @@ BEGIN
       END ELSE ACTION_IF (STRING_LENGTH ~%base_class%~ != 1 OR
                           INDEX(~%base_class%~ ~DFMPRT~) < 0) BEGIN
         OUTER_TEXT_SPRINT base_class ~~
-        WARN ~WARNING: Unsupported argument "base_class" [%base_class%]~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unsupported argument "base_class" [%base_class%]~ END
       END
     END ELSE BEGIN
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unsupported argument "base_class" [%base_class%]~ END
       OUTER_TEXT_SPRINT base_class ~~
-      WARN ~WARNING: Unsupported argument "base_class" [%base_class%]~
     END
   END
 
@@ -1060,9 +1088,9 @@ BEGIN
       RET unusable = hex
     END
     ACTION_IF (~%unusable%~ STR_EQ ~~) BEGIN
-      FAIL ~Invalid argument "unusable".~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~Invalid argument "unusable".~ END
     END ELSE ACTION_IF (STRING_LENGTH ~%unusable%~ > 8) BEGIN
-      FAIL ~Argument "unusable" is out of range.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~Argument "unusable" is out of range.~ END
     END
     OUTER_TEXT_SPRINT unusable ~0x%unusable%~
   END
@@ -1085,7 +1113,7 @@ BEGIN
       ACTION_IF (items > 0) BEGIN
         OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~) ? 1 : 0
         ACTION_IF (items - adjust < min_count) BEGIN
-          WARN ~WARNING: Too few entries in argument "%resref%". Using defaults.~
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Too few entries in argument "%resref%". Using defaults.~ END
         END
       END
     END
@@ -1099,7 +1127,7 @@ BEGIN
     // CLAB table can be a regular file or game resource
     ACTION_IF ((INDEX(~[\/]~ ~%clab_path%~) >= 0 && NOT FILE_EXISTS ~%clab_path%~) ||
                NOT FILE_EXISTS_IN_GAME ~%clab_path%~) BEGIN
-      FAIL ~No valid path or resource name to class ability table specified in argument "clab_path".~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~No valid path or resource name to class ability table specified in argument "clab_path".~ END
     END
   END
 
@@ -1111,7 +1139,7 @@ BEGIN
                kit_class != 15 &&  // CLERIC_THIEF
                kit_class != 20 &&  // MONK
                NOT "%thiefskl%" STR_EQ ~~) BEGIN
-      WARN ~WARNING: The argument "thiefskl" should only be provided for thief and monk kits.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~The argument "thiefskl" should only be provided for thief and monk kits.~ END
       OUTER_SPRINT thiefskl ~~
     END
     ACTION_IF (kit_class != 4 &&   // THIEF
@@ -1123,7 +1151,7 @@ BEGIN
                     "%traplimt%" STR_EQ ~~ &&
                     "%sneakatt%" STR_EQ ~~ &&
                     "%crippstr%" STR_EQ ~~)) BEGIN
-      WARN ~WARNING: The arguments for thief-only 2DAs should only be provided for thief kits.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~The arguments for thief-only 2DAs should only be provided for thief kits.~ END
       OUTER_SPRINT backstab ~~
       OUTER_SPRINT traplimt ~~
       OUTER_SPRINT sneakatt ~~
@@ -1173,7 +1201,7 @@ BEGIN
   SET insert_point = (insert_point > hc || insert_point < 0) ? hc : insert_point
   SET copy_header = (copy_header < 0) ? 0 : copy_header
   PATCH_IF (copy_header > hc) BEGIN
-    PATCH_WARN ~WARNING: Unable to copy %copy_header%th header, %SOURCE_FILE% contains only %hc% headers!~
+    LPF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unable to copy %copy_header%th header, %SOURCE_FILE% contains only %hc% headers!~ END
   END ELSE BEGIN
     INSERT_BYTES (ho + insert_point * hs) hs
     SET hc += 1
@@ -1518,13 +1546,13 @@ BEGIN
                           END
                       END
                     END ELSE BEGIN
-                      PATCH_WARN ~WARNING: Could not evaluate kit ability entry [%ability%]. Skipping.~
+                      LPF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Could not evaluate kit ability entry [%ability%]. Skipping.~ END
                     END
                   END ELSE BEGIN
-                    PATCH_WARN ~WARNING: Internal ability name too long [%abil_new%]. Skipping.~
+                    LPF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Internal ability name too long [%abil_new%]. Skipping.~ END
                   END
                 END ELSE BEGIN
-                  PATCH_WARN ~WARNING: Could not evaluate kit ability entry [%ability%]. Skipping.~
+                  LPF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Could not evaluate kit ability entry [%ability%]. Skipping.~ END
                 END
               END
             END
@@ -1536,7 +1564,7 @@ BEGIN
           LAF a7#add_kit_ex#ensure_base_clab STR_VAR base_class = EVAL ~%token%~ RET success clab_resref END
         END
       END ELSE BEGIN
-        WARN ~WARNING: Could not find kit ability table [%clab_res%.2da]. Skipping.~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Could not find kit ability table [%clab_res%.2da]. Skipping.~ END
       END
     END
   END
@@ -1604,7 +1632,7 @@ BEGIN
              NOT FILE_EXISTS_IN_GAME ~kitlist.2da~) BEGIN
     // Note1: IWD2 appears to have basic kit support, but is treated as "unsupported" until the engine is better understood.
     // Note2: PSTEE does support kits theoretically, but lacks the necessary files.
-    FAIL ~This game does not support kits.~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~This game does not support kits.~ END
   END
 
   LAF a7#add_kit_ex#validate_kitname
@@ -1630,7 +1658,7 @@ BEGIN
   END
 
   ACTION_IF (kit_id >= 0) BEGIN
-    PRINT ~Kit [%kit_name%] already present! Skipping!~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 1 STR_VAR msg = EVAL ~Kit [%kit_name%] already present! Skipping!~ END
   END ELSE BEGIN
     // advanced check for kit support
     LAF a7#add_kit_ex#get_kit_support
@@ -1665,10 +1693,10 @@ BEGIN
       ACTION_IF (row_index < 0) BEGIN
         // source kit not found
         ACTION_IF (kit_class > 0) BEGIN
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unknown source kit [%source_kit%]. Falling back on "kit_class".~ END
           OUTER_TEXT_SPRINT source_kit ~~
-          WARN ~WARNING: Unknown source kit [%source_kit%]. Falling back on "kit_class".~
         END ELSE BEGIN
-          FAIL ~Unknown source kit [%source_kit%].~
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Unknown source kit [%source_kit%].~ END
         END
       END ELSE BEGIN
         // source kit found
@@ -1711,7 +1739,7 @@ BEGIN
     LAF a7#add_kit_ex#next_row STR_VAR resref = ~kitlist~ RET kit_number = index END
     ACTION_IF (kit_number = 0) BEGIN OUTER_SET kit_number += 1 END
     ACTION_IF (NOT is_multiclass && kit_number > kits_limit) BEGIN
-      FAIL ~Unable to add kit [%kit_name%]. The game does not currently support more than %kits_limit% kits.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Unable to add kit [%kit_name%]. The game does not currently support more than %kits_limit% kits.~ END
     END
     OUTER_SET kit_number_full = kit_number + kit_id_base
 
@@ -1719,12 +1747,12 @@ BEGIN
     OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT kit_class_name ~class~ kit_class END
     ACTION_IF (kit_class <= 0 || kit_class >= 100 || IS_AN_INT ~%kit_class_name%~) BEGIN
       ACTION_IF (~%source_kit%~ STR_EQ ~~) BEGIN
-        FAIL ~No valid parent class provided for "kit_class".~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~No valid parent class provided for "kit_class".~ END
       END ELSE BEGIN
-        FAIL ~Could not determine parent class for kit [%kit_name%].~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Could not determine parent class for kit [%kit_name%].~ END
       END
     END ELSE ACTION_IF (kit_class > 18 && !is_ee && !is_gemrb) BEGIN
-      FAIL ~Game does not support kits for the specified parent class [%kit_class%].~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Game does not support kits for the specified parent class [%kit_class%].~ END
     END
 
     // basic argument checks
@@ -1742,14 +1770,14 @@ BEGIN
 
     // preparing kit name and description strings
     ACTION_IF (mixed < "-1") BEGIN
-      FAIL ~Argument "mixed" not specified.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~Argument "mixed" not specified.~ END
     END
     LAF a7#add_kit_ex#get_kitdesc
       INT_VAR kit_class help
       RET help
     END
     ACTION_IF (help < "-1") BEGIN
-      FAIL ~Argument "help" not specified.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~Argument "help" not specified.~ END
     END
     ACTION_IF (lower < "-1") BEGIN
       ACTION_IF (mixed >= 0) BEGIN
@@ -1773,7 +1801,7 @@ BEGIN
         RET clab_res = clab
       END
       ACTION_IF (~%clab_res%~ STR_EQ ~~) BEGIN
-        FAIL ~No valid class ability table specified for kit [%kit_name%].~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~No valid class ability table specified for kit [%kit_name%].~ END
       END
     END
 
@@ -1885,7 +1913,7 @@ BEGIN
           ACTION_TO_UPPER ~resref~
           ACTION_DEFINE_ASSOCIATIVE_ARRAY tables_modified BEGIN ~%resref%~ => 1 END
         END ELSE BEGIN
-          WARN ~Could not add kit reference to %resref%.2DA.~
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Could not add kit reference to %resref%.2DA.~ END
         END
       END
     END
@@ -1919,7 +1947,7 @@ BEGIN
         ACTION_TO_UPPER ~resref~
         ACTION_DEFINE_ASSOCIATIVE_ARRAY tables_modified BEGIN ~%resref%~ => 1 END
       END ELSE BEGIN
-        WARN ~WARNING: Could not apply "bdstweap". Skipping.~
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~Could not apply "bdstweap". Skipping.~ END
       END
     END
 
@@ -1996,7 +2024,7 @@ BEGIN
               ACTION_IF (fallen_notice >= "-1") BEGIN OUTER_SET $items(~9~) = fallen_notice END
             END
           END ELSE BEGIN
-            FAIL ~Could not add kit information to %resref%.2DA.~
+            LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Could not add kit information to %resref%.2DA.~ END
           END
 
           // adding clastext entry
@@ -2108,7 +2136,7 @@ BEGIN
     END
 
     OUTER_SET kit_id = kit_number
-    PRINT ~Added %kit_name% kit.~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 1 STR_VAR msg = EVAL ~Added %kit_name% kit.~ END
   END
 END
 
@@ -2180,7 +2208,7 @@ BEGIN
              NOT FILE_EXISTS_IN_GAME ~kitlist.2da~) BEGIN
     // Note1: IWD2 appears to have basic kit support, but is treated as "unsupported" until the engine is better understood.
     // Note2: PSTEE does support kits theoretically, but lacks the necessary files.
-    WARN ~WARNING: This game does not support kits.~
+    LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~This game does not support kits.~ END
   END ELSE BEGIN
     OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~ ? 1 : 0
     OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~) ? 1 : 0
@@ -2191,7 +2219,7 @@ BEGIN
       REPLACE_TEXTUALLY ~[ %TAB%%WNL%]+$~ ~~
     END
     ACTION_IF (~%kit_name%~ STR_EQ ~~) BEGIN
-      WARN ~WARNING: No kit name specified.~
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~No kit name specified.~ END
     END ELSE BEGIN
       LAF a7#add_kit_ex#get_row
         INT_VAR
