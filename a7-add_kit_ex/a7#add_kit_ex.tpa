@@ -295,14 +295,13 @@ BEGIN
           RET line = string
         END
         // expanding row with default values if needed
-        PATCH_MATCH ~%resref%~ WITH
-          ~backstab~ ~sneakatt~ BEGIN
-            // special: duplicate latest array item
-            SET i = array_items - 1
-            TEXT_SPRINT default $EVAL ~%array%~(~%i%~)
-          END
-          DEFAULT
-            READ_2DA_ENTRY_FORMER table 1 0 default
+        PATCH_IF (~%resref%~ STR_EQ ~backstab~ || ~%resref%~ STR_EQ ~sneakatt~) BEGIN
+          // special: duplicate latest array item
+          SET i = array_items - 1
+          TEXT_SPRINT default $EVAL ~%array%~(~%i%~)
+        END ELSE BEGIN
+          // otherwise: use table's default value
+          READ_2DA_ENTRY_FORMER table 1 0 default
         END
         FOR (i = array_items + extra_item; i < num_cols; ++i) BEGIN
           TEXT_SPRINT line ~%line% %default%~
