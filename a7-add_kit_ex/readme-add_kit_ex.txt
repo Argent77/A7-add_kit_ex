@@ -89,18 +89,18 @@ STR_VAR clasiskl        (optional, EE-only) 2DA string added to clasiskl.2da.
 STR_VAR clasthac        (optional, EE-only) 2DA string added to clasthac.2da.
 STR_VAR thiefscl        (optional, EE-only) 2DA string added to thiefscl.2da.
 STR_VAR backstab        (optional, EE-only) 2DA string added to backstab.2da. Missing columns are filled with copies of
-                        the last specified value. This argument should only be provided for thief kits and will be
-                        ignored for other classes.
+                        the last specified value. This argument should only be provided for thief and ranger kits and
+                        will be ignored for other classes.
 STR_VAR sneakatt        (optional, EE-only) 2DA string added to sneakatt.2da. Missing columns are filled with copies of
-                        the last specified value. This argument should only be provided for thief kits and will be
-                        ignored for other classes.
+                        the last specified value. This argument should only be provided for thief and ranger kits and
+                        will be ignored for other classes.
 STR_VAR crippstr        (optional, EE-only) 2DA string added to crippstr.2da. Missing columns are filled with copies of
-                        the last specified value. This argument should only be provided for thief kits and will be
-                        ignored for other classes.
+                        the last specified value. This argument should only be provided for thief and ranger kits and
+                        will be ignored for other classes.
 STR_VAR thiefskl        (optional, EE-only) 2DA string added to thiefskl.2da. This argument should only be provided for
                         thief and monk kits and will be ignored for other classes.
 STR_VAR traplimt        (optional, EE-only) 2DA string added to traplimt.2da. This argument should only be provided for
-                        thief kits and will be ignored for other classes.
+                        thief and bard kits and will be ignored for other classes.
 STR_VAR bdstweap        (optional, EE-only) 2DA string added to bdstweap.2da.
 
 Return value:
