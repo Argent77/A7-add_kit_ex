@@ -1146,7 +1146,6 @@ BEGIN
     // For thief and ranger kits only
     OUTER_TEXT_SPRINT match_vars ~~
     ACTION_FOR_EACH var IN ~backstab~ ~sneakatt~ ~crippstr~ BEGIN
-      OUTER_TEXT_SPRINT dbg EVAL ~%%var%%~
       ACTION_IF (NOT EVAL ~%%var%%~ STR_EQ ~~) BEGIN
         OUTER_SET match = 0
         ACTION_FOR_EACH id IN ~4~ ~9~ ~10~ ~12~ ~13~ ~15~ ~18~ BEGIN
