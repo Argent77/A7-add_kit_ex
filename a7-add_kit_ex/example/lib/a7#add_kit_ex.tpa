@@ -1132,20 +1132,21 @@ BEGIN
 
   ACTION_IF (is_ee) BEGIN
     // For thief and monk kits only
-    OUTER_SET match = 0
     ACTION_IF (NOT ~%thiefskl%~ STR_EQ ~~) BEGIN
+      OUTER_SET match = 0
       ACTION_FOR_EACH id IN ~4~ ~9~ ~10~ ~13~ ~15~ ~20~ BEGIN
         OUTER_SET match |= (kit_class = id)
       END
-    END
-    ACTION_IF (NOT match) BEGIN
-      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~The argument "thiefskl" should only be provided for thief and monk kits.~ END
-      OUTER_SPRINT thiefskl ~~
+      ACTION_IF (NOT match) BEGIN
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~Parameter "thiefskl" should only be provided for thief and monk kits.~ END
+        OUTER_SPRINT thiefskl ~~
+      END
     END
 
     // For thief and ranger kits only
     OUTER_TEXT_SPRINT match_vars ~~
     ACTION_FOR_EACH var IN ~backstab~ ~sneakatt~ ~crippstr~ BEGIN
+      OUTER_TEXT_SPRINT dbg EVAL ~%%var%%~
       ACTION_IF (NOT EVAL ~%%var%%~ STR_EQ ~~) BEGIN
         OUTER_SET match = 0
         ACTION_FOR_EACH id IN ~4~ ~9~ ~10~ ~12~ ~13~ ~15~ ~18~ BEGIN
@@ -1161,22 +1162,22 @@ BEGIN
       END
     END
     ACTION_IF (NOT ~%match_vars%~ STR_EQ ~~) BEGIN
-      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Arguments for the following parameters should only be provided for thief and ranger kits: %match_vars%~ END
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~The following parameter(s) should only be provided for thief and ranger kits: %match_vars%~ END
       OUTER_SPRINT backstab ~~
       OUTER_SPRINT sneakatt ~~
       OUTER_SPRINT crippstr ~~
     END
 
     // For thief and bard kits only
-    OUTER_SET match = 0
     ACTION_IF (NOT ~%traplimt%~ STR_EQ ~~) BEGIN
+      OUTER_SET match = 0
       ACTION_FOR_EACH id IN ~4~ ~5~ ~9~ ~10~ ~13~ ~15~ BEGIN
         OUTER_SET match |= (kit_class = id)
       END
-    END
-    ACTION_IF (NOT match) BEGIN
-      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~The argument "traplimt" should only be provided for thief and bard kits.~ END
-      OUTER_SPRINT traplimt ~~
+      ACTION_IF (NOT match) BEGIN
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~Parameter "traplimt" should only be provided for thief and bard kits.~ END
+        OUTER_SPRINT traplimt ~~
+      END
     END
   END
 END
