@@ -10,6 +10,8 @@ INT_VAR
 STR_VAR
   kit_name    = ~XX_RATCATCHER~
   source_kit  = ~BOUNTY_HUNTER~
+  backstab    = ~1 1 1 1 2~ // 1x multiplier for level entries 0-3, 2x multiplier for all other levels
+  traplimt    = ~12~
 RET kit_id
 END
 
