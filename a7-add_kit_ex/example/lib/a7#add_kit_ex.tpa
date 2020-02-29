@@ -1025,7 +1025,7 @@ BEGIN
   LAF a7#add_kit_ex#split STR_VAR string = EVAL ~%kittable%~ RET items RET_ARRAY items END
   OUTER_FOR (i = 0; i < items; ++i) BEGIN
     OUTER_TEXT_SPRINT resref $items(~%i%~)
-    ACTION_IF (~%resref%~ STRING_MATCHES_REGEXP ~K_[A-Z][A-Z]?_[A-Z][A-Z]?~ != 0 ||
+    ACTION_IF (~%resref%~ STRING_MATCHES_REGEXP ~K_[A-Z][A-Z]?[A-Z]?_[A-Z][A-Z]?~ != 0 ||
                NOT FILE_CONTAINS_EVALUATED(~kittable.2da~ ~%resref%~)) BEGIN
       LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Kittable entry "%resref%" is not valid. Skipping.~ END
     END
