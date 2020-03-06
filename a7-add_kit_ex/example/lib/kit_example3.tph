@@ -60,7 +60,27 @@ ACTION_IF (kit_id != "-1") BEGIN
                          ~clasiskl~ ~clasthac~ ~thiefscl~ ~backstab~ ~sneakatt~ ~crippstr~ ~thiefskl~ ~traplimt~ ~bdstweap~
   BEGIN
     OUTER_TEXT_SPRINT content EVAL ~%%var%%~
-    PRINT ~Content of %var%: %content%~
+    ACTION_IF (IS_AN_INT ~content~ &&
+               content >= 0 &&
+               (~%var%~ STR_EQ ~mixed~ ||
+                ~%var%~ STR_EQ ~lower~ ||
+                ~%var%~ STR_EQ ~help~ ||
+                ~%var%~ STR_EQ ~biography~ ||
+                ~%var%~ STR_EQ ~briefdesc~ ||
+                ~%var%~ STR_EQ ~fallen_notice~)) BEGIN
+      ACTION_GET_STRREF content text
+      OUTER_PATCH_SAVE text ~%text%~ BEGIN
+        PATCH_IF (BUFFER_LENGTH > 45) BEGIN
+          DELETE_BYTES 45 (BUFFER_LENGTH - 45)
+          INSERT_BYTES 45 3
+          WRITE_ASCII 45 ~...~ (3)
+        END
+        REPLACE_TEXTUALLY ~%MNL%?%LNL%~ ~ ~
+      END
+      PRINT ~Content of %var%: %content% (%text%)~
+    END ELSE BEGIN
+      PRINT ~Content of %var%: %content%~
+    END
   END
 END ELSE BEGIN
   ABORT ~Kit not found: %kit_name%.~
