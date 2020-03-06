@@ -841,7 +841,7 @@ BEGIN
       COPY_EXISTING ~%path%~ ~override~
         TEXT_SPRINT clab ~%SOURCE_RES%~
         TO_UPPER ~clab~
-      IF_EXISTS
+      BUT_ONLY IF_EXISTS
     END
   END ELSE BEGIN
     // Try kit first
@@ -972,6 +972,12 @@ STR_VAR
   stweap      = ~~
   clab_path   = ~~
   kittable    = ~~
+  clab_base_d = ~~
+  clab_base_f = ~~
+  clab_base_m = ~~
+  clab_base_p = ~~
+  clab_base_r = ~~
+  clab_base_t = ~~
   base_class  = ~~
   // EE-specific arguments
   backstab    = ~~
@@ -991,6 +997,12 @@ STR_VAR
 RET
   unusable
   clab_path
+  clab_base_d
+  clab_base_f
+  clab_base_m
+  clab_base_p
+  clab_base_r
+  clab_base_t
   base_class
   backstab
   thiefskl
@@ -1046,33 +1058,38 @@ BEGIN
       ~18~  => ~CLERIC_RANGER~
     END
     ACTION_IF (VARIABLE_IS_SET $multiclass_entries(~%kit_class%~)) BEGIN
-      OUTER_TEXT_SPRINT parent_class_name $multiclass_entries(~%kit_class%~)
-      ACTION_DEFINE_ASSOCIATIVE_ARRAY class_table BEGIN
-        ~DRUID~   => ~D~
-        ~FIGHTER~ => ~F~
-        ~MAGE~    => ~M~
-        ~CLERIC~  => ~P~
-        ~RANGER~  => ~R~
-        ~THIEF~   => ~T~
-      END
-      ACTION_IF (~%base_class%~ STR_EQ ~~) BEGIN
-        // Determine base class automatically from parent class
-        OUTER_PATCH_SAVE base_class ~%parent_class_name%~ BEGIN REPLACE_TEXTUALLY ~_.*~ ~~ END
-      END
-      ACTION_TO_UPPER ~base_class~
-      ACTION_IF (IS_AN_INT ~base_class~) BEGIN
-        OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT base_class ~class~ base_class END
-      END
-      ACTION_IF (VARIABLE_IS_SET $class_table(~%base_class%~)) BEGIN
-        OUTER_TEXT_SPRINT base_class $class_table(~%base_class%~)
-      END ELSE ACTION_IF (STRING_LENGTH ~%base_class%~ != 1 OR
-                          INDEX(~%base_class%~ ~DFMPRT~) < 0) BEGIN
-        OUTER_TEXT_SPRINT base_class ~~
-        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unsupported argument "base_class" [%base_class%]~ END
+      ACTION_IF (NOT ~%base_class%~ STR_EQ ~~) BEGIN
+        ACTION_DEFINE_ASSOCIATIVE_ARRAY class_table BEGIN
+          ~DRUID~   => ~D~
+          ~FIGHTER~ => ~F~
+          ~MAGE~    => ~M~
+          ~CLERIC~  => ~P~
+          ~RANGER~  => ~R~
+          ~THIEF~   => ~T~
+        END
+        ACTION_TO_UPPER ~base_class~
+        ACTION_IF (IS_AN_INT ~base_class~) BEGIN
+          OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT base_class ~class~ base_class END
+        END
+        ACTION_IF (VARIABLE_IS_SET $class_table(~%base_class%~)) BEGIN
+          OUTER_TEXT_SPRINT base_class $class_table(~%base_class%~)
+        END ELSE ACTION_IF (STRING_LENGTH ~%base_class%~ != 1 OR
+                            INDEX(~%base_class%~ ~DFMPRT~) < 0) BEGIN
+          OUTER_TEXT_SPRINT base_class ~~
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unsupported argument "base_class" [%base_class%]~ END
+        END
       END
     END ELSE BEGIN
       LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Unsupported argument "base_class" [%base_class%]~ END
       OUTER_TEXT_SPRINT base_class ~~
+    END
+  END ELSE BEGIN
+    ACTION_FOR_EACH var IN ~base_class~ ~clab_base_d~ ~clab_base_f~ ~clab_base_m~ ~clab_base_p~ ~clab_base_r~ ~clab_base_t~ BEGIN
+      OUTER_TEXT_SPRINT clab EVAL ~%%var%%~
+      ACTION_IF (NOT ~%clab%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Parameter "%var%" should only be provided for multiclass kits.~ END
+        OUTER_TEXT_SPRINT EVAL ~%var%~ ~~
+      END
     END
   END
 
@@ -1118,15 +1135,36 @@ BEGIN
     END
   END
 
-  ACTION_IF (NOT ~%clab_path%~ STR_EQ ~~) BEGIN
-    // Add file extension if user specified CLAB resref only
-    ACTION_IF (INDEX(~[\/]~ ~%clab_path%~) < 0 && INDEX(~\..*$~ ~%clab_path%~) < 0) BEGIN
-      OUTER_TEXT_SPRINT clab_path ~%clab_path%.2DA~
+  ACTION_IF (is_multiclass) BEGIN
+    // multiclass: CLAB is optional
+    ACTION_FOR_EACH var IN ~clab_path~ ~clab_base_d~ ~clab_base_f~ ~clab_base_m~ ~clab_base_p~ ~clab_base_r~ ~clab_base_t~ BEGIN
+      OUTER_TEXT_SPRINT clab EVAL ~%%var%%~
+      ACTION_IF (NOT ~%clab%~ STR_EQ ~~) BEGIN
+        // Add file extension if user specified CLAB resref only
+        ACTION_IF (INDEX(~[\/]~ ~%clab%~) < 0 && INDEX(~\..*$~ ~%clab%~) < 0) BEGIN
+          OUTER_TEXT_SPRINT clab ~%clab%.2DA~
+        END
+        // CLAB table can be a regular file or game resource
+        ACTION_IF ((INDEX(~[\/]~ ~%clab%~) >= 0 && NOT FILE_EXISTS ~%clab%~) ||
+                   NOT FILE_EXISTS_IN_GAME ~%clab%~) BEGIN
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Could not find kit ability table "%var%": [%clab%].~ END
+          OUTER_TEXT_SPRINT clab ~~
+        END
+        OUTER_TEXT_SPRINT EVAL ~%var%~ ~%clab%~
+      END
     END
-    // CLAB table can be a regular file or game resource
-    ACTION_IF ((INDEX(~[\/]~ ~%clab_path%~) >= 0 && NOT FILE_EXISTS ~%clab_path%~) ||
-               NOT FILE_EXISTS_IN_GAME ~%clab_path%~) BEGIN
-      LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~No valid path or resource name to class ability table specified in argument "clab_path".~ END
+  END ELSE BEGIN
+    // single class: CLAB is mandatory
+    ACTION_IF (NOT ~%clab_path%~ STR_EQ ~~) BEGIN
+      // Add file extension if user specified CLAB resref only
+      ACTION_IF (INDEX(~[\/]~ ~%clab_path%~) < 0 && INDEX(~\..*$~ ~%clab_path%~) < 0) BEGIN
+        OUTER_TEXT_SPRINT clab_path ~%clab_path%.2DA~
+      END
+      // CLAB table can be a regular file or game resource
+      ACTION_IF ((INDEX(~[\/]~ ~%clab_path%~) >= 0 && NOT FILE_EXISTS ~%clab_path%~) ||
+                 NOT FILE_EXISTS_IN_GAME ~%clab_path%~) BEGIN
+        LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Could not find kit ability table: [%clab_path%].~ END
+      END
     END
   END
 
@@ -1565,6 +1603,7 @@ BEGIN
                             INT_VAR insert_point = 0 opcode = 177 target = 1 timing = 9 resist_dispel = 0 power = 0 parameter1 = kit_id parameter2 = 9
                             STR_VAR resource = EVAL ~%abil_new%#~
                           END
+                        BUT_ONLY
                       END
                     END ELSE BEGIN
                       LPF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Could not evaluate kit ability entry [%ability%]. Skipping.~ END
@@ -1628,6 +1667,12 @@ STR_VAR
   clab_path     = ~~
   kittable      = ~~
   base_class    = ~~
+  clab_base_d   = ~~
+  clab_base_f   = ~~
+  clab_base_m   = ~~
+  clab_base_p   = ~~
+  clab_base_r   = ~~
+  clab_base_t   = ~~
   // EE-specific arguments
   clsrcreq      = ~~
   clswpbon      = ~~
@@ -1783,10 +1828,12 @@ BEGIN
         is_multiclass
       STR_VAR
         unusable clasweap weapprof abclasrq abclsmod abdcdsrq abdcscrq alignmnt dualclas luabbr stweap
-        clab_path kittable base_class backstab clsrcreq clswpbon hpclass
-        numwslot thiefskl traplimt clascolr clasiskl clasthac thiefscl sneakatt crippstr bdstweap
+        clab_path kittable clab_base_d clab_base_f clab_base_m clab_base_p clab_base_r clab_base_t base_class
+        backstab clsrcreq clswpbon hpclass numwslot thiefskl traplimt clascolr
+        clasiskl clasthac thiefscl sneakatt crippstr bdstweap
       RET
-        unusable clab_path base_class backstab thiefskl traplimt sneakatt crippstr
+        unusable clab_path clab_base_d clab_base_f clab_base_m clab_base_p clab_base_r clab_base_t
+        base_class backstab thiefskl traplimt sneakatt crippstr
     END
 
     // preparing kit name and description strings
@@ -1814,15 +1861,22 @@ BEGIN
     END
 
     // installing CLAB
-    ACTION_IF (~%clab_res%~ STR_EQ ~~) BEGIN
-      LAF a7#add_kit_ex#get_clab
-        STR_VAR
-          name = EVAL ~%kit_class_name%~
-          path = EVAL ~%clab_path%~
-        RET clab_res = clab
-      END
+    ACTION_IF (is_multiclass) BEGIN
+      // Multiclass: use placeholder for CLAB resref
+      COPY_EXISTING ~kitlist.2da~ ~override~
+        READ_2DA_ENTRY 1 0 1 clab_res
+      BUT_ONLY
+    END ELSE BEGIN
       ACTION_IF (~%clab_res%~ STR_EQ ~~) BEGIN
-        LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~No valid class ability table specified for kit [%kit_name%].~ END
+        LAF a7#add_kit_ex#get_clab
+          STR_VAR
+            name = EVAL ~%kit_class_name%~
+            path = EVAL ~%clab_path%~
+          RET clab_res = clab
+        END
+        ACTION_IF (~%clab_res%~ STR_EQ ~~) BEGIN
+          LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~No valid class ability table specified for kit [%kit_name%].~ END
+        END
       END
     END
 
@@ -2138,14 +2192,52 @@ BEGIN
     END
 
     // Installing multiclass kit logic
-    ACTION_IF (is_multiclass && NOT ~%base_class%~ STR_EQ ~~) BEGIN
-      LAF a7#add_kit_ex#multiclass
-        INT_VAR
-          kit_class
-        STR_VAR
-          kit_name
-          clab_res
-          base_class
+    ACTION_IF (is_multiclass) BEGIN
+      // creating multiclass clab array
+      OUTER_SET clab_paths = 0
+      ACTION_IF (NOT ~%clab_base_d%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_base_d%~ RET $clab_paths(~D~) = clab END
+        OUTER_SET clab_paths += 1
+      END
+      ACTION_IF (NOT ~%clab_base_f%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_base_f%~ RET $clab_paths(~F~) = clab END
+        OUTER_SET clab_paths += 1
+      END
+      ACTION_IF (NOT ~%clab_base_m%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_base_m%~ RET $clab_paths(~M~) = clab END
+        OUTER_SET clab_paths += 1
+      END
+      ACTION_IF (NOT ~%clab_base_p%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_base_p%~ RET $clab_paths(~P~) = clab END
+        OUTER_SET clab_paths += 1
+      END
+      ACTION_IF (NOT ~%clab_base_r%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_base_r%~ RET $clab_paths(~R~) = clab END
+        OUTER_SET clab_paths += 1
+      END
+      ACTION_IF (NOT ~%clab_base_t%~ STR_EQ ~~) BEGIN
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_base_t%~ RET $clab_paths(~T~) = clab END
+        OUTER_SET clab_paths += 1
+      END
+      ACTION_IF (NOT ~%base_class%~ STR_EQ ~~ && NOT ~%clab_path%~ STR_EQ ~~) BEGIN
+        // Default CLAB and base class overrides clab list
+        ACTION_IF (NOT VARIABLE_IS_SET $clab_paths(~%base_class%~)) BEGIN
+          OUTER_SET clab_paths += 1
+        END
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_res%~ RET $clab_paths(~%base_class%~) = clab END
+      END
+
+      ACTION_IF (clab_paths > 0) BEGIN
+        ACTION_PHP_EACH clab_paths AS base => path BEGIN
+          LAF a7#add_kit_ex#multiclass
+            INT_VAR
+              kit_class
+            STR_VAR
+              kit_name
+              clab_res = EVAL ~%path%~
+              base_class = EVAL ~%base%~
+          END
+        END
       END
     END
 

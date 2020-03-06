@@ -70,15 +70,24 @@ STR_VAR luabbr          (optional) 2DA string added to luabbr.2da.
 STR_VAR stweap          (optional) 2DA string added to 25stweap.2da.
 STR_VAR clab_path       (optional) Path to the CLAB-style 2DA file of your kit. File is installed and reference is
                         added to kitlist.2da. Specify filename without path to use an existing game resource instead.
-                        Omit to inherit CLAB of the specified source kit or parent class (single class kit only).
+                        Omit this parameter for single class kits to inherit CLAB of the specified source kit or
+                        parent class. Omit this parameter for multiclass kits if base_class is omitted as well.
 STR_VAR kittable        (optional) List of which class and race combinations the kit should be available for, as per
                         kittable.2da. Omit to make kit available for all races. Use parameter "visible" instead if you
                         want to make the kit unavailable for all races during character creation.
 STR_VAR base_class      (optional, EE-only, multiclass kits only) This parameter indicates which class the kit abilities
                         will be tied to by default. See more details in the "Multiclass Kits" chapter below.
                         The following single-letter class tokens are supported: [F]ighter, [P]riest, [D]ruid, [R]anger,
-                        [M]age and [T]hief. Omit this argument to have the function pick an appropriate base class
-                        automatically.
+                        [M]age and [T]hief.
+STR_VAR clab_base_f
+STR_VAR clab_base_p
+STR_VAR clab_base_d
+STR_VAR clab_base_r
+STR_VAR clab_base_m
+STR_VAR clab_base_t     (optional, EE-only, multiclass kits only) The clab_base_X parameters allow you to specify
+                        paths to CLAB-style 2DA files for individual base classes. X indicates the base class token
+                        for [f]ighter, [p]riest, [d]ruid, [r]anger, [m]age and [t]hief. It is also possible to use the
+                        parameters base_class and clab_path to set or override one of the clab_base_X parameters.
 STR_VAR clsrcreq        (optional, EE-only) 2DA string added to clsrcreq.2da.
 STR_VAR clswpbon        (optional, EE-only) 2DA string added to clswpbon.2da.
 STR_VAR hpclass         (optional, EE-only) 2DA string added to hpclass.2da. If this string references a custom 2DA
@@ -119,18 +128,26 @@ Multiclass Kits
 Enhanced Edition games since version 2.0 allow you to create true multiclass kits. However, the way how multiclass kits
 are handled by the game engine requires additional effort to properly deal with kit-specific abilities.
 
-The ADD_KIT_EX parameter "base_class" can be used to control which class aspect of a multiclass kit is used to apply
-kit-specific abilities, which means that abilities are only applied when that specific class increases in levels.
+ADD_KIT_EX provides two ways to control which class aspect of a multiclass kit is used to apply kit-specific abilities:
+
+1) Specify parameters "base_class" and "clab_path":
+"base_class" controls the class aspect used to apply the kit abilities defined in the table specified by "clab_path".
 For this reason it is necessary to specify a class aspect that is covered by the kit's parent multiclass.
+The following single-letter class tokens are supported by "base_class": F (for Fighter class), P (for Priest class),
+D (for Druid class), R (for Ranger class), M (for Mage class) and T (for Thief class). Alternatively, specify one of
+the symbolic class names: FIGHTER, CLERIC, DRUID, RANGER, MAGE or THIEF. Numeric class values are supported as well.
 
-The following single-letter class tokens are supported: F (for Fighter class), P (for Priest class), D (for Druid class),
-R (for Ranger class), M (for Mage class) and T (for Thief class). Alternatively, specify one of the symbolic class
-names: FIGHTER, CLERIC, DRUID, RANGER, MAGE or THIEF. Numeric class values are supported as well.
+2) Specify any of the clab_base_X parameters:
+The clab_base_X parameters can be used to set a class ability table for a specific base class. That way it is possible
+to assign different ability tables to individual class aspects of a multiclass kit. "X" indicates the base class token
+for [f]ighter, [p]riest, [d]ruid, [r]anger, [m]age and [t]hief.
+For example, for a kit based on the Fighter/Mage/Thief class you can use "clab_base_f", "clab_base_m" and "clab_base_t"
+to assign individual ability tables to the fighter, mage and thief class aspect respectively.
 
-It is also possible to override the base class by preceding CLAB table entries with a class token. This token allows
-you to fine-tune which ability will be applied by which class at level up. For example, to specifically assign the CLAB
-entry "GA_SPCL423" to the thief class aspect (e.g. of a multiclass Fighter/Thief kit), precede it with "T" to create
-"TGA_SPCL423".
+Alternatively, it is also possible to override the base class by preceding CLAB table entries with a class token.
+This token allows you to fine-tune which ability will be applied by which class at level up. For example, to
+specifically assign the CLAB entry "GA_SPCL423" to the thief class aspect (e.g. of a multiclass Fighter/Thief kit),
+precede it with "T" to create "TGA_SPCL423".
 
 This feature is very versatile, and can be used in a variety of scenarios. Some of the things it can do include:
 - giving a kit to a multiclass character at character creation (e.g. Swashbuckler/Mage).
