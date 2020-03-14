@@ -980,19 +980,15 @@ STR_VAR
   clab_base_t = ~~
   base_class  = ~~
   // EE-specific arguments
-  backstab    = ~~
   clsrcreq    = ~~
   clswpbon    = ~~
   hpclass     = ~~
   numwslot    = ~~
   thiefskl    = ~~
-  traplimt    = ~~
   clascolr    = ~~
   clasiskl    = ~~
   clasthac    = ~~
   thiefscl    = ~~
-  sneakatt    = ~~
-  crippstr    = ~~
   bdstweap    = ~~
 RET
   unusable
@@ -1004,11 +1000,7 @@ RET
   clab_base_r
   clab_base_t
   base_class
-  backstab
   thiefskl
-  traplimt
-  sneakatt
-  crippstr
 BEGIN
   // 2da tables and their minimum columns (excluding kit name)
   ACTION_DEFINE_ASSOCIATIVE_ARRAY tables_def BEGIN
@@ -1178,42 +1170,6 @@ BEGIN
       ACTION_IF (NOT match) BEGIN
         LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~Parameter "thiefskl" should only be provided for thief and monk kits.~ END
         OUTER_SPRINT thiefskl ~~
-      END
-    END
-
-    // For thief and ranger kits only
-    OUTER_TEXT_SPRINT match_vars ~~
-    ACTION_FOR_EACH var IN ~backstab~ ~sneakatt~ ~crippstr~ BEGIN
-      ACTION_IF (NOT EVAL ~%%var%%~ STR_EQ ~~) BEGIN
-        OUTER_SET match = 0
-        ACTION_FOR_EACH id IN ~4~ ~9~ ~10~ ~12~ ~13~ ~15~ ~18~ BEGIN
-          OUTER_SET match |= (kit_class = id)
-        END
-        ACTION_IF (NOT match) BEGIN
-          ACTION_IF (~%match_vars%~ STR_EQ ~~) BEGIN
-            OUTER_TEXT_SPRINT match_vars ~%var%~
-          END ELSE BEGIN
-            OUTER_TEXT_SPRINT match_vars ~%match_vars%, %var%~
-          END
-        END
-      END
-    END
-    ACTION_IF (NOT ~%match_vars%~ STR_EQ ~~) BEGIN
-      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~The following parameter(s) should only be provided for thief and ranger kits: %match_vars%~ END
-      OUTER_SPRINT backstab ~~
-      OUTER_SPRINT sneakatt ~~
-      OUTER_SPRINT crippstr ~~
-    END
-
-    // For thief and bard kits only
-    ACTION_IF (NOT ~%traplimt%~ STR_EQ ~~) BEGIN
-      OUTER_SET match = 0
-      ACTION_FOR_EACH id IN ~4~ ~5~ ~9~ ~10~ ~13~ ~15~ BEGIN
-        OUTER_SET match |= (kit_class = id)
-      END
-      ACTION_IF (NOT match) BEGIN
-        LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~Parameter "traplimt" should only be provided for thief and bard kits.~ END
-        OUTER_SPRINT traplimt ~~
       END
     END
   END
@@ -1829,11 +1785,10 @@ BEGIN
       STR_VAR
         unusable clasweap weapprof abclasrq abclsmod abdcdsrq abdcscrq alignmnt dualclas luabbr stweap
         clab_path kittable clab_base_d clab_base_f clab_base_m clab_base_p clab_base_r clab_base_t base_class
-        backstab clsrcreq clswpbon hpclass numwslot thiefskl traplimt clascolr
-        clasiskl clasthac thiefscl sneakatt crippstr bdstweap
+        clsrcreq clswpbon hpclass numwslot thiefskl clascolr clasiskl clasthac thiefscl bdstweap
       RET
         unusable clab_path clab_base_d clab_base_f clab_base_m clab_base_p clab_base_r clab_base_t
-        base_class backstab thiefskl traplimt sneakatt crippstr
+        base_class thiefskl
     END
 
     // preparing kit name and description strings
