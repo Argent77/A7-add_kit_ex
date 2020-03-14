@@ -76,6 +76,13 @@ RET bdstweap        (EE-only) 2DA string from bdstweap.2da.
 Changelog
 ~~~~~~~~~
 
+v0.4.0:
+- Added option to specify multiple clab paths for multiclass kits
+- Added multiclass kit installation to example mod
+- Removed class/kit restrictions from thieving-related parameters
+- Fixed incorrect autocompletion of thieving parameters containing only one entry
+- Fixed incorrect kittable entry validation
+
 v0.3.0:
 - Added full multiclass kit support for Enhanced Edition 2.0+ games
 
