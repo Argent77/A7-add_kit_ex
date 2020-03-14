@@ -103,8 +103,7 @@ STR_VAR sneakatt        (optional, EE-only) 2DA string added to sneakatt.2da. Mi
                         the last specified value.
 STR_VAR crippstr        (optional, EE-only) 2DA string added to crippstr.2da. Missing columns are filled with copies of
                         the last specified value.
-STR_VAR thiefskl        (optional, EE-only) 2DA string added to thiefskl.2da. This argument should only be provided for
-                        thief and monk kits and will be ignored for other classes.
+STR_VAR thiefskl        (optional, EE-only) 2DA string added to thiefskl.2da.
 STR_VAR traplimt        (optional, EE-only) 2DA string added to traplimt.2da.
 STR_VAR bdstweap        (optional, EE-only) 2DA string added to bdstweap.2da.
 
