@@ -1587,6 +1587,7 @@ INT_VAR
   briefdesc     = "-2"
   fallen        = "-1"
   fallen_notice = "-2"
+  prettify      = 1
   // For testing purposes only
   __kits_limit_override = 0
   __kits_base_value     = 0x4000
@@ -2173,10 +2174,12 @@ BEGIN
     END
 
     // prettifying modified tables
-    ACTION_PHP_EACH tables_modified AS resref => _ BEGIN
-      COPY_EXISTING ~%resref%.2DA~ ~override~
-        PRETTY_PRINT_2DA
-      BUT_ONLY IF_EXISTS
+    ACTION_IF (prettify) BEGIN
+      ACTION_PHP_EACH tables_modified AS resref => _ BEGIN
+        COPY_EXISTING ~%resref%.2DA~ ~override~
+          PRETTY_PRINT_2DA
+        BUT_ONLY IF_EXISTS
+      END
     END
 
     OUTER_SET kit_id = kit_number

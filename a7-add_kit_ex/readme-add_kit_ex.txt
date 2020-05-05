@@ -52,6 +52,8 @@ INT_VAR fallen          (optional, EE-only) 0 or 1. Indicates whether the kit is
                         only relevant for ranger and paladin kits. Added to clastext.2da.
 INT_VAR fallen_notice   (optional, EE-only) Fallen notice strref. Notice is shown in combat log when the fallen status
                         is applied to the character. Added to clastext.2da.
+INT_VAR prettify        (optional) 0 or 1. A purely cosmetic option that can be used to properly align data in tables
+                        that are modified by this function. Set to non-zero to activate. Default: 1
 STR_VAR source_kit      (optional, unless "kit_class" is omitted)  Name of an existing kit to copy information from for
                         all omitted parameters. Specify this parameter and set "visible" to 0 to imitate behavior of
                         the original WeiDU function "COPY_KIT".
