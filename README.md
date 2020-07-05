@@ -47,12 +47,7 @@ STR_VAR stweap         | *(optional)* 2DA string added to 25stweap.2da.
 STR_VAR clab_path      | *(optional)* Path to the CLAB-style 2DA file of your kit. File is installed and reference is added to kitlist.2da. Specify filename without path to use an existing game resource instead. Omit this parameter for single class kits to inherit the CLAB of the specified source kit or parent class. Omit this parameter for multiclass kits if `base_class` is omitted as well.
 STR_VAR kittable       | *(optional)* List of which class and race combinations the kit should be available for, as per kittable.2da. Omit to make kit available for all races. Use parameter "visible" instead if you want to make the kit unavailable for all races during character creation.
 STR_VAR base_class     | *(optional, EE-only, multiclass kits only)* This parameter indicates which class the kit abilities will be tied to by default. See more details in the "Multiclass Kits" chapter below. The following single-letter class tokens are supported: [F]ighter, [P]riest, [D]ruid, [R]anger, [M]age and [T]hief.
-STR_VAR&nbsp;clab_base_f<br/>
-STR_VAR&nbsp;clab_base_p<br/>
-STR_VAR&nbsp;clab_base_d<br/>
-STR_VAR&nbsp;clab_base_r<br/>
-STR_VAR&nbsp;clab_base_m<br/>
-STR_VAR&nbsp;clab_base_t  | *(optional, EE-only, multiclass kits only)* The clab_base_X parameters allow you to specify paths to CLAB-style 2DA files for individual base classes. X indicates the base class token for [f]ighter, [p]riest, [d]ruid, [r]anger, [m]age and [t]hief. It is also possible to use the parameters `base_class` and `clab_path` to set or override one of the clab_base_X parameters.
+STR_VAR&nbsp;clab_base_f<br/>STR_VAR&nbsp;clab_base_p<br/>STR_VAR&nbsp;clab_base_d<br/>STR_VAR&nbsp;clab_base_r<br/>STR_VAR&nbsp;clab_base_m<br/>STR_VAR&nbsp;clab_base_t  | *(optional, EE-only, multiclass kits only)* The clab_base_X parameters allow you to specify paths to CLAB-style 2DA files for individual base classes. X indicates the base class token for [f]ighter, [p]riest, [d]ruid, [r]anger, [m]age and [t]hief. It is also possible to use the parameters `base_class` and `clab_path` to set or override one of the clab_base_X parameters.
 STR_VAR clsrcreq       | *(optional, EE-only)* 2DA string added to clsrcreq.2da.
 STR_VAR clswpbon       | *(optional, EE-only)* 2DA string added to clswpbon.2da.
 STR_VAR hpclass        | *(optional, EE-only)* 2DA string added to hpclass.2da. If this string references a custom 2DA file, it needs to be copied into the game separately.<br/>***Note:** Because of engine limitations this parameter is ignored for multiclass kits.*
