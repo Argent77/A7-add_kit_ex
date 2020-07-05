@@ -55,7 +55,7 @@ STR_VAR&nbsp;clab_base_m<br/>
 STR_VAR&nbsp;clab_base_t  | *(optional, EE-only, multiclass kits only)* The clab_base_X parameters allow you to specify paths to CLAB-style 2DA files for individual base classes. X indicates the base class token for [f]ighter, [p]riest, [d]ruid, [r]anger, [m]age and [t]hief. It is also possible to use the parameters `base_class` and `clab_path` to set or override one of the clab_base_X parameters.
 STR_VAR clsrcreq       | *(optional, EE-only)* 2DA string added to clsrcreq.2da.
 STR_VAR clswpbon       | *(optional, EE-only)* 2DA string added to clswpbon.2da.
-STR_VAR hpclass        | *(optional, EE-only)* 2DA string added to hpclass.2da. If this string references a custom 2DA file, it needs to be copied into the game separately.
+STR_VAR hpclass        | *(optional, EE-only)* 2DA string added to hpclass.2da. If this string references a custom 2DA file, it needs to be copied into the game separately.<br/>***Note:** Because of engine limitations this parameter is ignored for multiclass kits.*
 STR_VAR numwslot       | *(optional, EE-only)* 2DA string added to numwslot.2da.
 STR_VAR clascolr       | *(optional, EE-only)* 2DA string added to clascolr.2da.
 STR_VAR clasiskl       | *(optional, EE-only)* 2DA string added to clasiskl.2da.

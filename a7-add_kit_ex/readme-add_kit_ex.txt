@@ -94,6 +94,7 @@ STR_VAR clsrcreq        (optional, EE-only) 2DA string added to clsrcreq.2da.
 STR_VAR clswpbon        (optional, EE-only) 2DA string added to clswpbon.2da.
 STR_VAR hpclass         (optional, EE-only) 2DA string added to hpclass.2da. If this string references a custom 2DA
                         file, it needs to be copied into the game separately.
+                        Note: Because of engine limitations this parameter is ignored for multiclass kits.
 STR_VAR numwslot        (optional, EE-only) 2DA string added to numwslot.2da.
 STR_VAR clascolr        (optional, EE-only) 2DA string added to clascolr.2da.
 STR_VAR clasiskl        (optional, EE-only) 2DA string added to clasiskl.2da.
