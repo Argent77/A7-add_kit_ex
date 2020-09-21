@@ -54,6 +54,10 @@ INT_VAR fallen_notice   (optional, EE-only) Fallen notice strref. Notice is show
                         is applied to the character. Added to clastext.2da.
 INT_VAR prettify        (optional) 0 or 1. A purely cosmetic option that can be used to properly align data in tables
                         that are modified by this function. Set to non-zero to activate. Default: 1
+INT_VAR reserve_space   (optional, EE-only, multiclass kits only) 0 or 1. Indicates whether kitlist.2da slots 0-255
+                        should be reserved exclusively for single-class kits. Multiclass kits will be added to slot 256
+                        or higher. Set to zero to to deactivate slot reservation. Default: 0
+                        Note: This option does not currently work well together with WeiDU's built-in ADD_KIT function.
 STR_VAR source_kit      (optional, unless "kit_class" is omitted)  Name of an existing kit to copy information from for
                         all omitted parameters. Specify this parameter and set "visible" to 0 to imitate behavior of
                         the original WeiDU function "COPY_KIT".
@@ -123,8 +127,8 @@ INT_VAR __kits_base_value       The kit base value added to "kit_id" when added 
 Multiclass Kits
 ~~~~~~~~~~~~~~~
 
-Enhanced Edition games since version 2.0 allow you to create true multiclass kits. However, the way how multiclass kits
-are handled by the game engine requires additional effort to properly deal with kit-specific abilities.
+Enhanced Edition games allow you to create true multiclass kits. However, the way how multiclass kits are handled by
+the game engine requires additional effort to properly deal with kit-specific abilities.
 
 ADD_KIT_EX provides two ways to control which class aspect of a multiclass kit is used to apply kit-specific abilities:
 
@@ -160,6 +164,9 @@ mages or other effects tied to the kit's usability flags are not covered.
 
 Due to the length restrictions on internal names, the function can only include abilities that have internal names
 of 7 characters or less. Abilities with internal names of 8 characters (or more) will be skipped with warnings.
+
+In Enhanced Edition games before patch 2.0 it is not possible to select multiclass kits during character generation.
+They can be assigned via script actions though.
 
 
 Usage

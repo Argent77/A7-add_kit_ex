@@ -1645,7 +1645,7 @@ INT_VAR
   fallen        = "-1"
   fallen_notice = "-2"
   prettify      = 1
-  reserve_space = 1 // (boolean, EE-only) indicates whether kitlist slots < 256 should be exclusively reserved for single class kits
+  reserve_space = 0
   // For testing purposes only
   __kits_limit_override = 0
   __kits_base_value     = 0x4000
@@ -1796,10 +1796,13 @@ BEGIN
       END
     END
 
-    // Multiclass kits are treated differently in EE 2.0+
+    // Multiclass kits are treated differently in EE games
     LAF a7#add_kit_ex#is_multiclass INT_VAR kit_class RET is_multiclass = result END
-    OUTER_SET is_multiclass = is_multiclass && is_ee20
-    OUTER_SET reserve_space = reserve_space && is_ee20
+    ACTION_IF (is_multiclass && NOT is_ee) BEGIN
+      LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~True multiclass kits are not supported by the current game engine.~ END
+    END
+    OUTER_SET is_multiclass = is_multiclass && is_ee
+    OUTER_SET reserve_space = reserve_space && is_ee
 
     // making sure kitlist.2da is properly prepared
     LAF a7#add_kit_ex#prepare_kitlist INT_VAR is_multiclass = is_multiclass && reserve_space RET result END
