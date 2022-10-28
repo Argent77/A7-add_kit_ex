@@ -189,6 +189,11 @@ returned by the "kit_id" parameter.
 Changelog
 ~~~~~~~~~
 
+v0.5.0:
+- Added an option to prettify modified 2da tables
+- Added a solution for multiclass kits to allow ability names with more than 7 characters
+- Fixed a multiclass kit related issue when using the base_class/clab_path pair of parameters
+
 v0.4.0:
 - Added option to specify multiple clab paths for multiclass kits
 - Added multiclass kit installation to example mod
