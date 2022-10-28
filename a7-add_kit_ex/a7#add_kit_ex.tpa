@@ -1517,15 +1517,14 @@ BEGIN
                   LPF SUBSTRING INT_VAR start = 0 length = 3 STR_VAR string = EVAL ~%ability%~ RET abil_type = substring END
                   SET length = (STRING_LENGTH ~%ability%~) - 3
                   LPF SUBSTRING INT_VAR start = 3 length STR_VAR string = EVAL ~%ability%~ RET abil_new = substring END
-                  PATCH_IF length >= 8 BEGIN
-                    
+                  PATCH_IF (length >= 8) BEGIN
                     LPF GET_UNIQUE_FILE_NAME STR_VAR extension = "EFF" base = EVAL "SGAB_%abil_new%" RET abil_new_name = filename END
                     INNER_PATCH_SAVE abil_new_name "%abil_new_name%" BEGIN REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~__~ ~SGAB~ END
                     LPF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Internal ability name too long [%abil_new%]. Making copy as [%abil_new_name%].~ END
                   END ELSE BEGIN
-                    SPRINT abil_new_name  EVAL "%abil_new%#"
+                    TEXT_SPRINT abil_new_name  ~%abil_new%#~
                   END
-                  SET length = (STRING_LENGTH ~%abil_new_name%~)
+                  SET length = STRING_LENGTH ~%abil_new_name%~
                   PATCH_IF (length <= 8) BEGIN
                     DEFINE_ASSOCIATIVE_ARRAY abil_types BEGIN
                       ~AP_~ => ~QD_MC_AP~
