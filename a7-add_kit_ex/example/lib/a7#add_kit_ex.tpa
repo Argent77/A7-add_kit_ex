@@ -2164,7 +2164,7 @@ BEGIN
         ACTION_IF (NOT VARIABLE_IS_SET $clab_paths(~%base_class%~)) BEGIN
           OUTER_SET clab_paths += 1
         END
-        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_res%~ RET $clab_paths(~%base_class%~) = clab END
+        LAF a7#add_kit_ex#get_clab STR_VAR path = EVAL ~%clab_path%~ RET $clab_paths(~%base_class%~) = clab END
       END
 
       ACTION_IF (clab_paths > 0) BEGIN
