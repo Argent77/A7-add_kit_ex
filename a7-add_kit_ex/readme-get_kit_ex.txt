@@ -76,6 +76,9 @@ RET bdstweap        (EE-only) 2DA string from bdstweap.2da.
 Changelog
 ~~~~~~~~~
 
+v0.5.1:
+- Fixed Sorcerer kits not always initializing all kit-related tables
+
 v0.5.0:
 - Added an option to prettify modified 2da tables
 - Added a solution for multiclass kits to allow ability names with more than 7 characters
