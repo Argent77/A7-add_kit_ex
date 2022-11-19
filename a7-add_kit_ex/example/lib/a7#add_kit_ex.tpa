@@ -332,6 +332,16 @@ BEGIN
           resref
         RET success
       END
+    END ELSE BEGIN
+      LAF a7#add_kit_ex#add_row
+        STR_VAR
+          kit_name
+          array = ~items~
+          resref
+          clone1 = EVAL ~%clone2%~
+          clone2 = EVAL ~%clone3%~
+        RET success
+      END
     END
   END ELSE ACTION_IF (NOT ~%clone2%~ STR_EQ ~~) BEGIN
     LAF a7#add_kit_ex#add_row
@@ -408,6 +418,16 @@ BEGIN
           kit_name
           array = ~items~
           resref
+        RET success
+      END
+    END ELSE BEGIN
+      LAF a7#add_kit_ex#add_column
+        STR_VAR
+          kit_name
+          array = ~items~
+          resref
+          clone1 = EVAL ~%clone2%~
+          clone2 = EVAL ~%clone3%~
         RET success
       END
     END
@@ -1759,7 +1779,15 @@ BEGIN
     OUTER_SET kit_number_full = kit_number + kit_id_base
 
     // getting parent class name
-    OUTER_PATCH ~~ BEGIN LOOKUP_IDS_SYMBOL_OF_INT kit_class_name ~class~ kit_class END
+    OUTER_PATCH ~~ BEGIN
+      LOOKUP_IDS_SYMBOL_OF_INT kit_class_name ~class~ kit_class
+      PATCH_IF (kit_class = 19) BEGIN
+        // special: SORCERER class isn't listed in a number of kit-related tables, using fallback option MAGE
+        LOOKUP_IDS_SYMBOL_OF_INT kit_class_name_alt ~class~ 1
+      END ELSE BEGIN
+        TEXT_SPRINT kit_class_name_alt ~~
+      END
+    END
     ACTION_IF (kit_class <= 0 || kit_class >= 100 || IS_AN_INT ~%kit_class_name%~) BEGIN
       ACTION_IF (~%source_kit%~ STR_EQ ~~) BEGIN
         LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = ~No valid parent class provided for "kit_class".~ END
@@ -1845,7 +1873,7 @@ BEGIN
     // preparing kit/class lookup preference
     OUTER_TEXT_SPRINT clone1 ~%source_kit%~
     OUTER_TEXT_SPRINT clone2 ~%kit_class_name%~
-    OUTER_TEXT_SPRINT clone3 ~~
+    OUTER_TEXT_SPRINT clone3 ~%kit_class_name_alt%~
     ACTION_IF (is_multiclass) BEGIN
       ACTION_DEFINE_ASSOCIATIVE_ARRAY token_to_class_name BEGIN
         ~D~ => ~DRUID~
