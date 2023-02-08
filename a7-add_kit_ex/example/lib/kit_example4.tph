@@ -1,4 +1,4 @@
-// *** Test: add new multiplayer kit (EE 2.0+ only) ***
+// *** Test: add new multiclass kit (EE 2.0+ only) ***
 
 INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
 
