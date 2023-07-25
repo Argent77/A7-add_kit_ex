@@ -64,6 +64,11 @@ STR_VAR traplimt       | *(optional, EE-only)* 2DA string added to traplimt.2da.
 STR_VAR bdstweap       | *(optional, EE-only)* 2DA string added to bdstweap.2da.
 RET kit_id             | The numeric value generated for the specified kit. This value is exactly 0x4000 less than the number your kit is assigned in kit.ids. Returns -1 if the kit couldn't be installed.
 
+#### Diagnostic parameters for general use:
+Parameter | Description
+---|---
+INT_VAR   | (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero. Default: 0
+
 #### Experimental parameters for testing purposes only:
 Parameter | Description
 ---|---

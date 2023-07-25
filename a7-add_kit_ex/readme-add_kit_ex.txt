@@ -114,6 +114,9 @@ Return value:
 RET kit_id              The numeric value generated for the specified kit. This value is exactly 0x4000 less than the
                         number your kit is assigned in kit.ids. Returns -1 if the kit couldn't be installed.
 
+Diagnostic parameters for general use:
+INT_VAR suppress_warnings       (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero.
+
 Experimental parameters for testing purposes only (!!!DO NOT CHANGE WITHOUT A GOOD REASON!!!)
 INT_VAR __kits_limit_override   Maximum number of supported kit entries. Default: 0 (autodetect)
 INT_VAR __kits_base_value       The kit base value added to "kit_id" when added to kitlist.2da or kit.ids.
