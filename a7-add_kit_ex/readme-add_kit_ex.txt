@@ -192,6 +192,9 @@ returned by the "kit_id" parameter.
 Changelog
 ~~~~~~~~~
 
+v0.6.0:
+- Added parameter "suppress_warnings" to ADD_KIT_EX
+
 v0.5.1:
 - Fixed Sorcerer kits not always initializing all kit-related tables
 
