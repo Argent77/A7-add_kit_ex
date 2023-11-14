@@ -67,7 +67,7 @@ RET kit_id             | The numeric value generated for the specified kit. This
 #### Diagnostic parameters for general use:
 Parameter | Description
 ---|---
-INT_VAR   | (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero. Default: 0
+INT_VAR suppress_warnings  | (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero. Default: 0
 
 #### Experimental parameters for testing purposes only:
 Parameter | Description
