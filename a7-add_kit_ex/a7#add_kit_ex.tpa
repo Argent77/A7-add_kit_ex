@@ -1299,39 +1299,49 @@ STR_VAR
   resref = ~~
 BEGIN
   ACTION_IF (FILE_EXISTS_IN_GAME ~%resref%.2DA~) BEGIN
-    OUTER_SET columns = 0
     COPY_EXISTING ~%resref%.2DA~ ~override~
+      SET modified = 0
       READ_2DA_ENTRIES_NOW rows 1
       READ_2DA_ENTRY_FORMER rows 1 0 default
-      FOR (col = 41; col < 51; ++col) BEGIN // assuming first 40 columns are always defined
-        TEXT_SPRINT string ~$ $~ // header and default row are ignored
-        SET col2 = col - 1  // compensate for data header row being short by one entry
-        PATCH_IF (VARIABLE_IS_SET $rows(~2~ ~%col2%~)) BEGIN
-          TEXT_SPRINT string ~%string% $~
-        END ELSE BEGIN
-          TEXT_SPRINT string ~%string% %col%~
-        END
-        FOR (row = 3; row < rows; ++row) BEGIN
-          PATCH_IF (VARIABLE_IS_SET $rows(~%row%~ ~%col%~)) BEGIN
-            TEXT_SPRINT string ~%string% $~
-          END ELSE BEGIN
-            SET col2 = col - 10 // cloning a previous entry to keep table data consistent
-            TEXT_SPRINT value $rows(~%row%~ ~%col2%~)
-            TEXT_SPRINT string ~%string% %value%~
-          END
-        END
-        // checking whether column has to be added
-        PATCH_IF (INDEX(~[^ %TAB%$]~ ~%string%~) >= 0) BEGIN
-          TEXT_SPRINT $columns(~%columns%~) ~%string%~
-          SET columns += 1
+
+      // padding table header
+      FOR (col = 40; col < 50; ++col) BEGIN
+        PATCH_IF (NOT VARIABLE_IS_SET $rows(~2~ ~%col%~)) BEGIN
+          SET col_name = col + 1
+          TEXT_SPRINT $rows(~2~ ~%col%~) ~%col_name%~
+          SET modified = 1
         END
       END
-    BUT_ONLY
 
-    OUTER_FOR (col = 0; col < columns; ++col) BEGIN
-      OUTER_TEXT_SPRINT string $columns(~%col%~)
-      APPEND_COL ~%resref%.2DA~ ~%string%~
-    END
+      // padding table content
+      FOR (row = 3; row < rows; ++row) BEGIN
+        FOR (col = 41; col < 51; ++col) BEGIN
+          PATCH_IF (NOT VARIABLE_IS_SET $rows(~%row%~ ~%col%~)) BEGIN
+            SET col2 = col - 10 // cloning a previous entry to keep table data consistent
+            TEXT_SPRINT value $rows(~%row%~ ~%col2%~)
+            TEXT_SPRINT $rows(~%row%~ ~%col%~) ~%value%~
+            SET modified = 1
+          END
+        END
+      END
+
+      // writing table data to file
+      PATCH_IF (modified) BEGIN
+        TEXT_SPRINT content ~~
+        FOR (row = 0; row < rows; ++ row) BEGIN
+          FOR (col = 0; VARIABLE_IS_SET $rows(~%row%~ ~%col%~); ++col) BEGIN
+            TEXT_SPRINT value $rows(~%row%~ ~%col%~)
+            TEXT_SPRINT content ~%content%%value% ~
+          END
+          TEXT_SPRINT content ~%content%%WNL%~
+        END
+        SET content_len = STRING_LENGTH ~%content%~
+
+        DELETE_BYTES 0 BUFFER_LENGTH
+        INSERT_BYTES 0 content_len
+        WRITE_ASCIIE 0 ~%content%~ (content_len)
+      END
+    BUT_ONLY
   END
 END
 
