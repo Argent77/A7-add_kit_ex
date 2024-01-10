@@ -14,6 +14,9 @@ This is an action function for WeiDU. It aims at unifying WeiDU's built-in funct
 the complementary functions fl#add_kit_ee, which handles the EE-specific aspects, and qd_multiclass, which handles true
 multiclass kits.
 
+Important:
+ADD_KIT_EX requires WeiDU version 247 or later to work correctly.
+
 
 Description
 ~~~~~~~~~~~
@@ -191,6 +194,11 @@ returned by the "kit_id" parameter.
 
 Changelog
 ~~~~~~~~~
+
+v0.6.1:
+- Improved normalization of CLAB tables to reduce conflicts with other mods
+- Improved multiclass kit initialization
+- Fixed a potential error when internal function "a7#add_kit_ex#print_message" is called externally
 
 v0.6.0:
 - Added parameter "suppress_warnings" to ADD_KIT_EX

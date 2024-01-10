@@ -19,6 +19,9 @@ Unless stated otherwise, if no value is provided for one or more of the optional
 
 Missing entries in specified 2da strings will be filled with sane default values if needed.
 
+**Important:**<br/>
+ADD_KIT_EX requires WeiDU version 247 or later to work correctly.
+
 Parameter | Description
 ---|---
 STR_VAR&nbsp;kit_name  | *(required)* The internal name of your kit. This name is used throughout all relevant IDS and 2DA files to reference your kit.

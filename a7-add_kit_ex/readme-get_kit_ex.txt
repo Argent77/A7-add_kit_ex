@@ -76,6 +76,11 @@ RET bdstweap        (EE-only) 2DA string from bdstweap.2da.
 Changelog
 ~~~~~~~~~
 
+v0.6.1:
+- Improved normalization of CLAB tables to reduce conflicts with other mods
+- Improved multiclass kit initialization
+- Fixed a potential error when internal function "a7#add_kit_ex#print_message" is called externally
+
 v0.6.0:
 - Added parameter "suppress_warnings" to ADD_KIT_EX
 
