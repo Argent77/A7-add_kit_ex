@@ -1301,25 +1301,25 @@ BEGIN
   ACTION_IF (FILE_EXISTS_IN_GAME ~%resref%.2DA~) BEGIN
     COPY_EXISTING ~%resref%.2DA~ ~override~
       SET modified = 0
-      READ_2DA_ENTRIES_NOW rows 1
-      READ_2DA_ENTRY_FORMER rows 1 0 default
+      READ_2DA_ENTRIES_NOW pad_clab_table_rows 1
+      READ_2DA_ENTRY_FORMER pad_clab_table_rows 1 0 default
 
       // padding table header
       FOR (col = 40; col < 50; ++col) BEGIN
-        PATCH_IF (NOT VARIABLE_IS_SET $rows(~2~ ~%col%~)) BEGIN
+        PATCH_IF (NOT VARIABLE_IS_SET $pad_clab_table_rows(~2~ ~%col%~)) BEGIN
           SET col_name = col + 1
-          TEXT_SPRINT $rows(~2~ ~%col%~) ~%col_name%~
+          TEXT_SPRINT $pad_clab_table_rows(~2~ ~%col%~) ~%col_name%~
           SET modified = 1
         END
       END
 
       // padding table content
-      FOR (row = 3; row < rows; ++row) BEGIN
+      FOR (row = 3; row < pad_clab_table_rows; ++row) BEGIN
         FOR (col = 41; col < 51; ++col) BEGIN
-          PATCH_IF (NOT VARIABLE_IS_SET $rows(~%row%~ ~%col%~)) BEGIN
+          PATCH_IF (NOT VARIABLE_IS_SET $pad_clab_table_rows(~%row%~ ~%col%~)) BEGIN
             SET col2 = col - 10 // cloning a previous entry to keep table data consistent
-            TEXT_SPRINT value $rows(~%row%~ ~%col2%~)
-            TEXT_SPRINT $rows(~%row%~ ~%col%~) ~%value%~
+            TEXT_SPRINT value $pad_clab_table_rows(~%row%~ ~%col2%~)
+            TEXT_SPRINT $pad_clab_table_rows(~%row%~ ~%col%~) ~%value%~
             SET modified = 1
           END
         END
@@ -1328,9 +1328,9 @@ BEGIN
       // writing table data to file
       PATCH_IF (modified) BEGIN
         TEXT_SPRINT content ~~
-        FOR (row = 0; row < rows; ++ row) BEGIN
-          FOR (col = 0; VARIABLE_IS_SET $rows(~%row%~ ~%col%~); ++col) BEGIN
-            TEXT_SPRINT value $rows(~%row%~ ~%col%~)
+        FOR (row = 0; row < pad_clab_table_rows; ++ row) BEGIN
+          FOR (col = 0; VARIABLE_IS_SET $pad_clab_table_rows(~%row%~ ~%col%~); ++col) BEGIN
+            TEXT_SPRINT value $pad_clab_table_rows(~%row%~ ~%col%~)
             TEXT_SPRINT content ~%content%%value% ~
           END
           TEXT_SPRINT content ~%content%%WNL%~
@@ -1530,12 +1530,12 @@ BEGIN
                  FILE_EXISTS_IN_GAME ~%clab_res%.2DA~) BEGIN
         ACTION_CLEAR_ARRAY ~token_cache~  // collects affected base class CLABs for later update
         COPY_EXISTING ~%clab_res%.2da~ ~override~
-          READ_2DA_ENTRIES_NOW rows 1
-          READ_2DA_ENTRY_FORMER rows 1 0 default
-          FOR (row = 3; row < rows; ++row) BEGIN
-            FOR (col = 1; VARIABLE_IS_SET $rows(~%row%~ ~%col%~); ++col) BEGIN
+          READ_2DA_ENTRIES_NOW multiclass_rows 1
+          READ_2DA_ENTRY_FORMER multiclass_rows 1 0 default
+          FOR (row = 3; row < multiclass_rows; ++row) BEGIN
+            FOR (col = 1; VARIABLE_IS_SET $multiclass_rows(~%row%~ ~%col%~); ++col) BEGIN
               TEXT_SPRINT class_token ~%base_class%~
-              READ_2DA_ENTRY_FORMER rows row col ability
+              READ_2DA_ENTRY_FORMER multiclass_rows row col ability
               TO_UPPER ~ability~
               PATCH_IF !(~%ability%~ STR_EQ ~%default%~) BEGIN
                 PATCH_IF (~%ability%~ STRING_MATCHES_REGEXP ~[DFMPRT]GA_.+~ = 0 ||
