@@ -19,7 +19,7 @@ INT_VAR severity = 1  // 0=LOG, 1=PRINT, 2=WARN, 3=FAIL
 STR_VAR msg = ~~
 BEGIN
   ACTION_IF (NOT ~%msg%~ STR_EQ ~~) BEGIN
-    ACTION_IF (suppress_warnings && severity = 2) BEGIN
+    ACTION_IF (IS_AN_INT ~suppress_warnings~ && suppress_warnings && severity = 2) BEGIN
       OUTER_SET severity = 1
     END
     ACTION_IF (severity < 1) BEGIN
