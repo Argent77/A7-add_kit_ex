@@ -1,6 +1,7 @@
 /*
  * ADD_KIT_EX - A full ADD_KIT replacement that is compatible with both classic and Enhanced Edition games.
  * GET_KIT_EX - A function for retrieving attributes of any given kit.
+ * Requirements: WeiDU version 247 or later
  * Author: Argent77 
  * Multiclass kit code: based on "qd_multiclass" by Aquadrizzt and Subtledoctor
  * Licence: public domain
