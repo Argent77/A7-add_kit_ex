@@ -1,20 +1,42 @@
-BACKUP ~example/backup~
-AUTHOR ~Argent77~
-VERSION ~1.0~
+BACKUP ~weidu_external/backup/example~
+SUPPORT ~https://github.com/Argent77/A7-add_kit_ex/issues~
+VERSION ~2.0~
+
+ALWAYS
+  // root folder for mutable data
+  OUTER_TEXT_SPRINT WORK_FOLDER ~weidu_external~
+
+  ACTION_IF ((FILE_EXISTS ~dlc/sod-dlc.zip~) OR (FILE_EXISTS ~sod-dlc.zip~)) THEN BEGIN
+    FAIL ~DLC Merger is required before mods can be installed on this game.~
+  END
+END
 
 
 BEGIN ~ADD_KIT_EX: Add new single-class kit~
+DESIGNATED 0
+LABEL ~A7-ADD_KIT_EX-EXAMPLE-SINGLE~
+
 INCLUDE ~%MOD_FOLDER%/lib/kit_example.tph~
 
 
 BEGIN ~ADD_KIT_EX: Add new multi-class kit~
 REQUIRE_PREDICATE (GAME_IS ~bgee bg2ee eet iwdee~ && FILE_EXISTS ~engine.lua~) ~Requires Enhanced Edition 2.0+ game.~
+DESIGNATED 1
+LABEL ~A7-ADD_KIT_EX-EXAMPLE-MULTI~
+
 INCLUDE ~%MOD_FOLDER%/lib/kit_example4.tph~
 
 
 BEGIN ~ADD_KIT_EX: Copy existing kit~
+DESIGNATED 2
+LABEL ~A7-ADD_KIT_EX-EXAMPLE-COPY~
+
 INCLUDE ~%MOD_FOLDER%/lib/kit_example2.tph~
 
 
 BEGIN ~GET_KIT_EX: Retrieve kit attributes~
+NO_LOG_RECORD
+DESIGNATED 3
+LABEL ~A7-ADD_KIT_EX-EXAMPLE-INFO~
+
 INCLUDE ~%MOD_FOLDER%/lib/kit_example3.tph~

@@ -37,6 +37,8 @@ RET briefdesc       (EE-only) Short class or kit description strref. -1 if this 
 RET fallen          (EE-only) Whether the kit is a "fallen" variant. -1 if this information is not available.
 RET fallen_notice   (EE-only) Fallen notice strref. Notice is shown in combat log when the fallen status is applied to
                     the character. -1 if this information is not available.
+RET can_fall        (EE-only) Indicates whether the kit is allowed to "fall". This flag is only relevant for ranger
+                    and paladin kits. Returns hardcoded defaults otherwise.
 RET unusable        Unusability code associated with the kit in hexadecimal notation. Empty string if this information
                     is not available. Note: Defined as string parameter to work around WeiDU restrictions.
 RET clasweap        2DA string from clasweap.2da. Empty string if this information is not available.

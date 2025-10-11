@@ -1647,6 +1647,7 @@ INT_VAR
   briefdesc     = "-2"
   fallen        = "-1"
   fallen_notice = "-2"
+  can_fall      = 1
   prettify      = 1
   // Diagnostic arguments
   suppress_warnings     = 0
@@ -1942,6 +1943,29 @@ BEGIN
       ACTION_IF (success) BEGIN
         ACTION_TO_UPPER ~resref~
         ACTION_DEFINE_ASSOCIATIVE_ARRAY tables_modified BEGIN ~%resref%~ => 1 END
+      END
+    END
+
+    // EE-specific: prevent kit from falling
+    ACTION_IF (is_ee20 && can_fall = 0) BEGIN
+      ACTION_MATCH kit_class WITH
+        6 12 18 BEGIN // paladin, ranger (single/multi)
+          LAF a7#add_kit_ex#split STR_VAR string = ~0~ RET items RET_ARRAY items END
+          LAF a7#add_kit_ex#add_row
+            STR_VAR
+              kit_name
+              array = ~items~
+              resref = ~fallen~
+              clone1
+              clone2
+              clone3
+            RET success
+          END
+          ACTION_IF (success) BEGIN
+            ACTION_DEFINE_ASSOCIATIVE_ARRAY tables_modified BEGIN ~FALLEN~ => 1 END
+          END
+        END
+        DEFAULT
       END
     END
 
@@ -2288,6 +2312,7 @@ RET
   briefdesc
   fallen
   fallen_notice
+  can_fall
   // textual return values
   unusable
   clasweap
@@ -2319,7 +2344,7 @@ RET
   bdstweap
 BEGIN
   // resetting return values
-  ACTION_FOR_EACH var IN ~kit_id~ ~kit_class~ ~mixed~ ~lower~ ~help~ ~biography~ ~briefdesc~ ~fallen~ ~fallen_notice~
+  ACTION_FOR_EACH var IN ~kit_id~ ~kit_class~ ~mixed~ ~lower~ ~help~ ~biography~ ~briefdesc~ ~fallen~ ~fallen_notice~ ~can_fall~
   BEGIN
     OUTER_SET EVAL ~%var%~ = "-1"
   END
@@ -2338,6 +2363,7 @@ BEGIN
     LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~This game does not support kits.~ END
   END ELSE BEGIN
     OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~ ? 1 : 0
+    OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~) ? 1 : 0
     OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~) ? 1 : 0
 
     // checking kit name
@@ -2549,6 +2575,24 @@ BEGIN
               OUTER_SET fallen = (items > 7 && IS_AN_INT $items(~7~)) ? $items(~7~) : 0
               ACTION_IF (items > 8 && IS_AN_INT $items(~8~)) BEGIN OUTER_SET briefdesc = $items(~8~) END
               ACTION_IF (items > 9 && IS_AN_INT $items(~9~)) BEGIN OUTER_SET fallen_notice = $items(~9~) END
+            END
+
+            // getting "can fall" flag
+            ACTION_MATCH kit_class WITH
+              6 12 18 BEGIN // paladin, ranger (single/multi)
+                OUTER_SET can_fall = 1
+              END
+              DEFAULT
+                OUTER_SET can_fall = 0
+            END
+            ACTION_IF (is_ee20) BEGIN
+              LAF a7#add_kit_ex#get_row STR_VAR resref = ~fallen~ row_name = EVAL ~%clastext_kit%~ RET row row_index END
+              ACTION_IF (row_index >= 0) BEGIN
+                LAF a7#add_kit_ex#split STR_VAR string = EVAL ~%row%~ RET items RET_ARRAY items END
+                ACTION_IF (items > 1) BEGIN
+                  OUTER_SET can_fall = IS_AN_INT $items(~1~) && $items(~1~) != 0
+                END
+              END
             END
 
             // getting table rows
