@@ -79,6 +79,7 @@ Changelog
 ~~~~~~~~~
 
 v0.6.3:
+- Added "can_fall" as parameter to ADD_KIT_EX and as return value to GET_KIT_EX
 - Fixed encoding issues with auto-generated lower-cased kit title
 - Internal code modernizations
 
