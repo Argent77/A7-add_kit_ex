@@ -195,6 +195,9 @@ returned by the "kit_id" parameter.
 Changelog
 ~~~~~~~~~
 
+v0.6.3:
+- Internal code modernizations
+
 v0.6.2:
 - Fixed an internal array name collision causing garbled data to be added to CLAB tables
 
