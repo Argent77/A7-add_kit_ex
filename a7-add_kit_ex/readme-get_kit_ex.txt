@@ -77,6 +77,7 @@ Changelog
 ~~~~~~~~~
 
 v0.6.3:
+- Fixed encoding issues with auto-generated lower-cased kit title
 - Internal code modernizations
 
 v0.6.2:

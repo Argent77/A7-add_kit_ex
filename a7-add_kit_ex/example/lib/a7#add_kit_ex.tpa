@@ -37,6 +37,37 @@ BEGIN
 END
 
 
+// Checks if the given string is encoded purely in ASCII.
+DEFINE_DIMORPHIC_FUNCTION a7#add_kit_ex#is_ascii
+STR_VAR
+  string = ~~
+RET
+  result
+BEGIN
+  OUTER_SET result = 1
+  OUTER_SET len = STRING_LENGTH ~%string%~
+  OUTER_PATCH ~%string%~ BEGIN
+    FOR (pos = 0; result && pos < len; ++pos) BEGIN
+      SET result = (SBYTE_AT pos) >= 0
+    END
+  END
+END
+
+
+// Performs "TO_LOWER" on the given string only if it contains exclusively ASCII or is considered as ANSI-encoded.
+DEFINE_DIMORPHIC_FUNCTION a7#add_kit_ex#to_lower
+STR_VAR
+  string = ~~
+RET
+  string
+BEGIN
+  LAF a7#add_kit_ex#is_ascii STR_VAR string RET result END
+  ACTION_IF (result || NOT GAME_IS ~bgee bg2ee eet iwdee~) BEGIN
+    ACTION_TO_LOWER ~string~
+  END
+END
+
+
 // Split given string into individual items
 DEFINE_DIMORPHIC_FUNCTION a7#add_kit_ex#split
 INT_VAR offset = 0    // start index of array
@@ -1830,8 +1861,7 @@ BEGIN
       ACTION_IF (mixed >= 0) BEGIN
         OUTER_PATCH ~~ BEGIN
           GET_STRREF mixed mixed_string
-          SPRINT lower_string ~%mixed_string%~
-          TO_LOWER ~lower_string~
+          LPF a7#add_kit_ex#to_lower STR_VAR string = EVAL ~%mixed_string%~ RET lower_string = string END
           SET lower = RESOLVE_STR_REF(~%lower_string%~)
         END
       END ELSE BEGIN
