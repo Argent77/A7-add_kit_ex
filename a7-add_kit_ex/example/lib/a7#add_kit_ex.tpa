@@ -76,15 +76,21 @@ RET items             // number of items
 RET_ARRAY items       // array of items
 BEGIN
   OUTER_SET items = offset
-  OUTER_FOR (i = 0; i <= offset; ++i) BEGIN OUTER_SPRINT $items(~%i%~) ~~ END
+  OUTER_FOR (i = 0; i < offset; ++i) BEGIN OUTER_SPRINT $items(~%i%~) ~~ END
+
+  OUTER_SET len = STRING_LENGTH ~%string%~
   OUTER_PATCH ~%string%~ BEGIN
-    REPLACE_EVALUATE
-      ~\([^ %TAB%%WNL%]+\)~
-      BEGIN
-        SPRINT $items(~%items%~) ~%MATCH1%~
+    SET p1 = INDEX_BUFFER(~[^ %TAB%%WNL%]~)
+    WHILE (p1 >= 0) BEGIN
+      SET p2 = INDEX_BUFFER(~[ %TAB%%WNL%]~ p1)
+      SET p2 = (p2 < 0) ? len : p2
+      PATCH_IF (p2 > p1) BEGIN
+        READ_ASCII p1 item (p2 - p1)
+        SPRINT $items(~%items%~) ~%item%~
         SET items += 1
       END
-      ~~
+      SET p1 = INDEX_BUFFER(~[^ %TAB%%WNL%]~ p2)
+    END
   END
 END
 
