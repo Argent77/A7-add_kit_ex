@@ -28,7 +28,7 @@ STR_VAR&nbsp;kit_name  | *(required)* The internal name of your kit. This name i
 INT_VAR visible        | *(optional)* Indicates whether the kit will be selectable during character creation. Set to 0 to make it unselectable for player characters. Default: 1
 INT_VAR kit_class      | *(required, unless "source_kit" is specified)* Parent class ID added to kitlist.2da.
 INT_VAR mixed          | *(required, unless "source_kit" is specified)* Mixed name strref of your kit, added to kitlist.2da.
-INT_VAR lower          | *(optional)* Lower name strref of your kit, added to kitlist.2da. A lower-cased version of "mixed" is generated if this parameter is not available.
+INT_VAR lower          | *(optional)* Lower name strref of your kit, added to kitlist.2da. A lower-cased version of "mixed" is generated if this parameter is not available.<br/>***Note:** Auto-generation may not work correctly if the name contains non-ASCII characters.*
 INT_VAR help           | *(optional)* Description string of your kit, added to kitlist.2da.
 INT_VAR biography      | *(optional, EE-only)* The biography strref of your kit, added to clastext.2da.
 INT_VAR briefdesc      | *(optional, EE-only)* Short class or kit description strref added to clastext.2da.
