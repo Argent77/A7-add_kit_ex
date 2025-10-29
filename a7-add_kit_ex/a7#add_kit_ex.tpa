@@ -21,14 +21,14 @@ INT_VAR severity = 1  // 0=LOG, 1=PRINT, 2=WARN, 3=FAIL
 STR_VAR msg = ~~
 BEGIN
   ACTION_IF (NOT ~%msg%~ STR_EQ ~~) BEGIN
-    ACTION_IF (IS_AN_INT ~suppress_warnings~ && suppress_warnings && severity = 2) BEGIN
+    ACTION_IF (IS_AN_INT ~suppress_warnings~ && suppress_warnings && severity == 2) BEGIN
       OUTER_SET severity = 1
     END
     ACTION_IF (severity < 1) BEGIN
       LOG ~%msg%~
-    END ELSE ACTION_IF (severity = 1) BEGIN
+    END ELSE ACTION_IF (severity == 1) BEGIN
       PRINT ~%msg%~
-    END ELSE ACTION_IF (severity = 2) BEGIN
+    END ELSE ACTION_IF (severity == 2) BEGIN
       WARN ~WARNING: %msg%~
     END ELSE ACTION_IF (severity > 2) BEGIN
       FAIL ~%msg%~
@@ -76,7 +76,9 @@ RET items             // number of items
 RET_ARRAY items       // array of items
 BEGIN
   OUTER_SET items = offset
-  OUTER_FOR (i = 0; i < offset; ++i) BEGIN OUTER_SPRINT $items(~%i%~) ~~ END
+  OUTER_FOR (i = 0; i < offset; ++i) BEGIN
+    OUTER_SPRINT $items(~%i%~) ~~
+  END
 
   OUTER_SET len = STRING_LENGTH ~%string%~
   OUTER_PATCH ~%string%~ BEGIN
@@ -108,20 +110,20 @@ BEGIN
   OUTER_SPRINT string ~~
   ACTION_IF (NOT ~%array%~ STR_EQ ~~ && IS_AN_INT EVAL ~%array%~ && EVAL ~%array%~ > offset) BEGIN
     OUTER_SET idx = offset
-    ACTION_IF (insert_index = idx && NOT ~%insert%~ STR_EQ ~~) BEGIN
+    ACTION_IF (insert_index == idx && NOT ~%insert%~ STR_EQ ~~) BEGIN
       OUTER_SPRINT string ~%insert%~
     END ELSE BEGIN
       OUTER_SPRINT string $EVAL ~%array%~(~%idx%~)
       OUTER_SET idx += 1
     END
     OUTER_FOR (; idx < EVAL ~%array%~ && VARIABLE_IS_SET $EVAL ~%array%~(~%idx%~); ++idx) BEGIN
-      ACTION_IF (insert_index = idx && idx > offset && NOT ~%insert%~ STR_EQ ~~) BEGIN
+      ACTION_IF (insert_index == idx && idx > offset && NOT ~%insert%~ STR_EQ ~~) BEGIN
         OUTER_SPRINT string ~%string% %insert%~
       END
       OUTER_SPRINT s $EVAL ~%array%~(~%idx%~)
       OUTER_SPRINT string ~%string% %s%~
     END
-    ACTION_IF (insert_index = idx && NOT ~%insert%~ STR_EQ ~~) BEGIN
+    ACTION_IF (insert_index == idx && NOT ~%insert%~ STR_EQ ~~) BEGIN
       OUTER_SPRINT string ~%string% %insert%~
     END
   END
@@ -303,7 +305,7 @@ STR_VAR
 RET success       // returns whether an entry was actually added
 BEGIN
   OUTER_SET success = 0
-  OUTER_SET kit_column = (~%resref%~ STR_EQ ~kitlist~) ? 1 : 0  // special: kitlist.2da uses column 1 for kit name
+  OUTER_SET kit_column = (~%resref%~ STR_EQ ~kitlist~)  // special: kitlist.2da uses column 1 for kit name
   ACTION_IF (IS_AN_INT EVAL ~%array%~ && EVAL ~%array%~ > 0) BEGIN
     OUTER_SET array_items = EVAL ~%array%~
     COPY_EXISTING ~%resref%.2da~ ~override~
@@ -634,7 +636,7 @@ BEGIN
     OUTER_SET len = STRING_LENGTH ~%hex%~
     OUTER_PATCH_SAVE hex ~%hex%~ BEGIN
       WHILE (len < min_digits) BEGIN INSERT_BYTES 0 1  WRITE_BYTE 0 ZERO  SET len += 1 END
-      WHILE (len > min_digits && BYTE_AT 0 = ZERO) BEGIN DELETE_BYTES 0 1  SET len -= 1 END
+      WHILE (len > min_digits && (BYTE_AT 0) == ZERO) BEGIN DELETE_BYTES 0 1  SET len -= 1 END
     END
 
     ACTION_IF (prefix) BEGIN OUTER_SPRINT hex ~0x%hex%~ END
@@ -779,10 +781,10 @@ RET
   kit_id_base
   kits_limit
 BEGIN
-  OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~ ? 1 : 0
-  OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~) ? 1 : 0
-  OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~) ? 1 : 0
-  OUTER_SET is_gemrb = (FILE_EXISTS ~GemRB.log~ || FILE_EXISTS ~gem-baldur.ini~) ? 1 : 0
+  OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~
+  OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~)
+  OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~)
+  OUTER_SET is_gemrb = (FILE_EXISTS ~GemRB.log~ || FILE_EXISTS ~gem-baldur.ini~)
   LAF a7#add_kit_ex#is_tobex RET is_tobex = result END
 
   OUTER_SET kit_id_base = kit_base
@@ -820,7 +822,7 @@ BEGIN
     LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Length of argument "%param_name%" exceeds 32 characters.~ END
   END
 
-  ACTION_IF (INDEX(~[0-9]~ ~%kit_name%~) = 0) || (INDEX(~[ %TAB%%WNL%*?/\]~ ~%kit_name%~) >= 0) BEGIN
+  ACTION_IF (INDEX(~[0-9]~ ~%kit_name%~) == 0) || (INDEX(~[ %TAB%%WNL%*?/\]~ ~%kit_name%~) >= 0) BEGIN
     LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Argument "%param_name%" contains invalid characters.~ END
   END
 END
@@ -839,9 +841,9 @@ BEGIN
       READ_2DA_ENTRIES_NOW clastext 1
       FOR (row = 3; row < clastext; ++row) BEGIN
         READ_2DA_ENTRY_FORMER clastext row 1 class_id
-        PATCH_IF (IS_AN_INT ~class_id~ && class_id = kit_class) BEGIN
+        PATCH_IF (IS_AN_INT ~class_id~ && class_id == kit_class) BEGIN
           READ_2DA_ENTRY_FORMER clastext row 2 kit_id
-          PATCH_IF (IS_AN_INT ~kit_id~ && kit_id = 16384) BEGIN
+          PATCH_IF (IS_AN_INT ~kit_id~ && kit_id == 0x4000) BEGIN
             READ_2DA_ENTRY_FORMER clastext row 4 value
             PATCH_IF (IS_AN_INT ~value~) BEGIN
               SET help = value
@@ -1080,7 +1082,7 @@ BEGIN
   ACTION_PHP_EACH tables_def AS resref => min_count BEGIN
     LAF a7#add_kit_ex#split STR_VAR string = EVAL EVAL ~%%resref%%~ RET items RET_ARRAY items END
     ACTION_IF (items > 0) BEGIN
-      OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~) ? 1 : 0
+      OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~)
       ACTION_IF (items - adjust < min_count) BEGIN
         LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Too few entries in argument "%resref%". Using defaults.~ END
       END
@@ -1193,7 +1195,7 @@ BEGIN
     ACTION_PHP_EACH tables_ee AS resref => min_count BEGIN
       LAF a7#add_kit_ex#split STR_VAR string = EVAL EVAL ~%%resref%%~ RET items RET_ARRAY items END
       ACTION_IF (items > 0) BEGIN
-        OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~) ? 1 : 0
+        OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~)
         ACTION_IF (items - adjust < min_count) BEGIN
           LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = EVAL ~Too few entries in argument "%resref%". Using defaults.~ END
         END
@@ -1322,8 +1324,7 @@ DEFINE_ACTION_FUNCTION a7#add_kit_ex#ensure_clab_table
 STR_VAR
   resref = ~~
 BEGIN
-  ACTION_IF !(~%resref%~ STR_EQ ~~ ||
-              FILE_EXISTS_IN_GAME ~%resref%.2DA~) BEGIN
+  ACTION_IF NOT (~%resref%~ STR_EQ ~~ || FILE_EXISTS_IN_GAME ~%resref%.2DA~) BEGIN
     OUTER_SPRINT default ~****~
     OUTER_SPRINT hdr ~~
     OUTER_SPRINT data ~~
@@ -1408,7 +1409,7 @@ DEFINE_ACTION_FUNCTION a7#add_kit_ex#ensure_qdmc_spl
 STR_VAR
   base_class = ~~
 BEGIN
-  ACTION_IF (~%base_class%~ STRING_MATCHES_REGEXP ~[DFMPRT]~ = 0 &&
+  ACTION_IF (~%base_class%~ STRING_MATCHES_REGEXP ~[DFMPRT]~ == 0 &&
              NOT FILE_EXISTS_IN_GAME ~QD_MC%base_class%01.SPL~) BEGIN
     ACTION_IF (NOT FILE_EXISTS ~.../a7-add_kit_ex/inlined/QD_MC_01.SPL~) BEGIN
       // create template SPL file for internal use
@@ -1432,14 +1433,14 @@ BEGIN
         OUTER_SPRINT resref1 ~QD_MC%base_class%%col%~
         OUTER_SPRINT resref2 ~QD#MC%base_class%%col%~
       END
-      ACTION_IF !(FILE_EXISTS_IN_GAME ~%resref1%.SPL~) BEGIN
+      ACTION_IF (NOT FILE_EXISTS_IN_GAME ~%resref1%.SPL~) BEGIN
         COPY ~.../a7-add_kit_ex/inlined/QD_MC_01.SPL~ ~override/%resref1%.SPL~
           LPF ADD_SPELL_EFFECT
             INT_VAR opcode = 146 target = 1 parameter1 = 0 parameter2 = 1 timing = 9
             STR_VAR resource = EVAL ~%resref2%~
           END
       END
-      ACTION_IF !(FILE_EXISTS_IN_GAME ~%resref2%.SPL~) BEGIN
+      ACTION_IF (NOT FILE_EXISTS_IN_GAME ~%resref2%.SPL~) BEGIN
         COPY ~.../a7-add_kit_ex/inlined/QD_MC_01.SPL~ ~override/%resref2%.SPL~
           LPF ADD_SPELL_EFFECT
             INT_VAR opcode = 206 target = 1 parameter1 = "-1" timing = 9
@@ -1461,7 +1462,7 @@ RET
 BEGIN
   OUTER_SET success = 0
   OUTER_SPRINT clab_resref ~~
-  ACTION_IF (~%base_class%~ STRING_MATCHES_REGEXP ~[DFMPRT]~ = 0) BEGIN
+  ACTION_IF (~%base_class%~ STRING_MATCHES_REGEXP ~[DFMPRT]~ == 0) BEGIN
     // getting corresponding base class CLAB resref
     ACTION_DEFINE_ASSOCIATIVE_ARRAY base_clabs BEGIN
       ~D~ => ~CLABDR01~
@@ -1513,7 +1514,7 @@ BEGIN
   OUTER_SET kit_id = IDS_OF_SYMBOL(~kit~ ~%kit_name%~)
   ACTION_IF (NOT (~%kit_name%~ STR_EQ ~~ || ~%clab_res%~ STR_EQ ~~) &&
              kit_id > 0 &&
-             ~%base_class%~ STRING_MATCHES_REGEXP ~[DFMPRT]~ = 0) BEGIN
+             ~%base_class%~ STRING_MATCHES_REGEXP ~[DFMPRT]~ == 0) BEGIN
 
     // determine whether "clab_res" points to a base class table
     OUTER_SET skip = 0
@@ -1596,9 +1597,9 @@ BEGIN
               SPRINT class_token ~%base_class%~
               READ_2DA_ENTRY_FORMER multiclass_rows row col ability
               TO_UPPER ~ability~
-              PATCH_IF !(~%ability%~ STR_EQ ~%default%~) BEGIN
-                PATCH_IF (~%ability%~ STRING_MATCHES_REGEXP ~[DFMPRT]GA_.+~ = 0 ||
-                          ~%ability%~ STRING_MATCHES_REGEXP ~[DFMPRT]AP_.+~ = 0) BEGIN
+              PATCH_IF (NOT ~%ability%~ STR_EQ ~%default%~) BEGIN
+                PATCH_IF (~%ability%~ STRING_MATCHES_REGEXP ~[DFMPRT]GA_.+~ == 0 ||
+                          ~%ability%~ STRING_MATCHES_REGEXP ~[DFMPRT]AP_.+~ == 0) BEGIN
                   // override base class
                   INNER_PATCH_SAVE ability ~%ability%~ BEGIN
                     READ_ASCII 0 class_token (1)
@@ -1832,7 +1833,7 @@ BEGIN
         ACTION_IF (items > 9) BEGIN
           // storing source kit id for later
           OUTER_SPRINT number $items(~9~)
-          ACTION_IF (IS_AN_INT ~number~ && (number & 0x4000 = 0x4000)) BEGIN
+          ACTION_IF (IS_AN_INT ~number~ && ((number & 0x4000) == 0x4000)) BEGIN
             OUTER_SET source_kit_id = number & 0x3fff
           END ELSE BEGIN
             OUTER_SPRINT source_kit_id ~%number%~
@@ -1848,7 +1849,7 @@ BEGIN
 
     // getting next available kit number
     LAF a7#add_kit_ex#next_row STR_VAR resref = ~kitlist~ RET kit_number = index END
-    ACTION_IF (kit_number = 0) BEGIN OUTER_SET kit_number += 1 END
+    ACTION_IF (kit_number == 0) BEGIN OUTER_SET kit_number += 1 END
     ACTION_IF (NOT is_multiclass && kit_number > kits_limit) BEGIN
       LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Unable to add kit [%kit_name%]. The game does not currently support more than %kits_limit% kits.~ END
     END
@@ -1857,7 +1858,7 @@ BEGIN
     // getting parent class name
     OUTER_PATCH ~~ BEGIN
       LOOKUP_IDS_SYMBOL_OF_INT kit_class_name ~class~ kit_class
-      PATCH_IF (kit_class = 19) BEGIN
+      PATCH_IF (kit_class == 19) BEGIN
         // special: SORCERER class isn't listed in a number of kit-related tables, using fallback option MAGE
         LOOKUP_IDS_SYMBOL_OF_INT kit_class_name_alt ~class~ 1
       END ELSE BEGIN
@@ -1870,7 +1871,7 @@ BEGIN
       END ELSE BEGIN
         LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Could not determine parent class for kit [%kit_name%].~ END
       END
-    END ELSE ACTION_IF (kit_class > 18 && !is_ee && !is_gemrb) BEGIN
+    END ELSE ACTION_IF (kit_class > 18 && NOT is_ee && NOT is_gemrb) BEGIN
       LAF a7#add_kit_ex#print_message INT_VAR severity = 3 STR_VAR msg = EVAL ~Game does not support kits for the specified parent class [%kit_class%].~ END
     END
 
@@ -1987,7 +1988,7 @@ BEGIN
     END
 
     // EE-specific: prevent kit from falling
-    ACTION_IF (is_ee20 && can_fall = 0) BEGIN
+    ACTION_IF (is_ee20 && can_fall == 0) BEGIN
       ACTION_MATCH kit_class WITH
         6 12 18 BEGIN // paladin, ranger (single/multi)
           LAF a7#add_kit_ex#split STR_VAR string = ~0~ RET items RET_ARRAY items END
@@ -2042,7 +2043,7 @@ BEGIN
         END
       END
       LAF a7#add_kit_ex#split STR_VAR string = EVAL ~%kittable%~ RET items RET_ARRAY items END
-      OUTER_SET i = (items > 0 && ($items(~0~) STR_EQ ~%kit_name%~ || $items(~0~) STR_EQ ~%kit_class_name%~)) ? 1 : 0
+      OUTER_SET i = (items > 0 && ($items(~0~) STR_EQ ~%kit_name%~ || $items(~0~) STR_EQ ~%kit_class_name%~))
       OUTER_FOR (; i < items; ++i) BEGIN
         OUTER_SPRINT resref $items(~%i%~)
         // ensure table exists
@@ -2150,7 +2151,7 @@ BEGIN
                   STR_VAR number = EVAL ~%tbl_kit_id%~
                   RET tbl_kit_id = hex
                 END
-                PATCH_IF (tbl_class_id = $req_class_id(~%type%~) &&
+                PATCH_IF (tbl_class_id == $req_class_id(~%type%~) &&
                           ~%tbl_kit_id%~ STR_EQ $req_kit_id(~%type%~))
                 BEGIN
                   FOR (col = 0; col < num_cols; ++col) BEGIN
@@ -2174,7 +2175,7 @@ BEGIN
             ACTION_IF (help >= "-1") BEGIN OUTER_SET $items(~4~) = help END
             ACTION_IF (mixed >= "-1") BEGIN OUTER_SET $items(~5~) = mixed END
             ACTION_IF (biography >= "-1") BEGIN OUTER_SET $items(~6~) = biography END
-            ACTION_IF (fallen >= 0) BEGIN OUTER_SET $items(~7~) = (fallen != 0) ? 1 : 0 END
+            ACTION_IF (fallen >= 0) BEGIN OUTER_SET $items(~7~) = (fallen != 0) END
             ACTION_IF (briefdesc >= "-1") BEGIN OUTER_SET $items(~8~) = briefdesc END
             ACTION_IF (items > 9) BEGIN
               ACTION_IF (fallen_notice >= "-1") BEGIN OUTER_SET $items(~9~) = fallen_notice END
@@ -2402,9 +2403,9 @@ BEGIN
     // Note2: PSTEE does support kits theoretically, but lacks the necessary files.
     LAF a7#add_kit_ex#print_message INT_VAR severity = 2 STR_VAR msg = ~This game does not support kits.~ END
   END ELSE BEGIN
-    OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~ ? 1 : 0
-    OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~) ? 1 : 0
-    OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~) ? 1 : 0
+    OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~
+    OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~)
+    OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~)
 
     // checking kit name
     OUTER_PATCH_SAVE kit_name ~%kit_name%~ BEGIN
@@ -2580,19 +2581,19 @@ BEGIN
               COUNT_2DA_COLS num_cols
               READ_2DA_ENTRIES_NOW clastext_table 1
               SET req_kid = kit_id
-              PATCH_IF (req_kid = "-2147483648") BEGIN SPRINT req_kid ~0x80000000~ END
+              PATCH_IF (req_kid == "-2147483648") BEGIN SPRINT req_kid ~0x80000000~ END
               LPF a7#add_kit_ex#to_hex INT_VAR min_digits = 0 STR_VAR number = EVAL ~%req_kid%~ RET req_kid = hex END
               FOR (r = 3; r < clastext_table; ++r) BEGIN
                 READ_2DA_ENTRY_FORMER clastext_table r 1 cid
                 READ_2DA_ENTRY_FORMER clastext_table r 2 kid
                 LPF a7#add_kit_ex#to_hex INT_VAR min_digits = 0 STR_VAR number = EVAL ~%kid%~ RET kid = hex END
-                PATCH_IF (cid = kit_class) BEGIN
+                PATCH_IF (cid == kit_class) BEGIN
                   PATCH_IF (~%kid%~ STR_EQ ~%req_kid%~) BEGIN
                     READ_2DA_ENTRY_FORMER clastext_table r 0 clastext_kit
                   END
                   PATCH_IF (~%kid%~ STR_EQ ~0x4000~) BEGIN
                     READ_2DA_ENTRY_FORMER clastext_table r 7 f
-                    PATCH_IF (IS_AN_INT ~f~ && f = 0) BEGIN
+                    PATCH_IF (IS_AN_INT ~f~ && f == 0) BEGIN
                       READ_2DA_ENTRY_FORMER clastext_table r 0 clastext_class
                     END
                   END
