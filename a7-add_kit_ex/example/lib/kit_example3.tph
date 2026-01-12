@@ -51,6 +51,7 @@ RET
   thiefskl
   traplimt
   bdstweap
+  "x-clserg"
 END
 
 ACTION_IF (kit_id != "-1") BEGIN
@@ -59,6 +60,7 @@ ACTION_IF (kit_id != "-1") BEGIN
                          ~unusable~ ~clasweap~ ~weapprof~ ~abclasrq~ ~abclsmod~ ~abdcdsrq~ ~abdcscrq~ ~alignmnt~ ~dualclas~
                          ~luabbr~ ~stweap~ ~clab_res~ ~kittable~ ~clsrcreq~ ~clswpbon~ ~hpclass~ ~numwslot~ ~clascolr~
                          ~clasiskl~ ~clasthac~ ~thiefscl~ ~backstab~ ~sneakatt~ ~crippstr~ ~thiefskl~ ~traplimt~ ~bdstweap~
+                         ~x-clserg~
   BEGIN
     OUTER_TEXT_SPRINT content EVAL ~%%var%%~
     ACTION_IF (IS_AN_INT ~content~ &&

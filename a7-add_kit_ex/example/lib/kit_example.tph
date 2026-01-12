@@ -54,6 +54,7 @@ LAF ADD_KIT_EX
     // numwslot      = ~4~
     // clascolr      = ~30 91 93 23 93~
     bdstweap      = ~LEAT05 * HELM01 * RING06 * * * * BRAC09 BELT02 AROW02,40 BULL02,40 BOLT02,40 POTN08,5 POTN17,3 * BOW06 XBOW05 STAF02~
+    ~x-clserg~    = ~1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0~   // EEex-only: no -8 thac0 penalty when using bows or crossbows in melee range
   RET
     kit_id
 END
