@@ -73,6 +73,7 @@ RET thiefskl        (EE-only) 2DA string from thiefskl.2da. Empty string if this
 RET traplimt        (EE-only) Trap cap number, as defined in traplimt.2da. Empty string if this information is
                     not available.
 RET bdstweap        (EE-only) 2DA string from bdstweap.2da.
+RET x-clserg        (EEex-only) 2DA string from x-clserg.2da.
 
 
 Changelog

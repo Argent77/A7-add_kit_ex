@@ -854,6 +854,7 @@ RET
   is_sod
   is_tobex
   is_gemrb
+  is_eeex
   kit_id_base
   kits_limit
 BEGIN
@@ -861,6 +862,7 @@ BEGIN
   OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~)
   OUTER_SET is_sod = GAME_INCLUDES ~sod~
   OUTER_SET is_gemrb = (FILE_EXISTS ~GemRB.log~ || FILE_EXISTS ~gem-baldur.ini~)
+  OUTER_SET is_eeex = (is_ee20 && MOD_IS_INSTALLED ~EEex.tp2~ 0)
   LAF a7#add_kit_ex#is_tobex RET is_tobex = result END
 
   OUTER_SET kit_id_base = kit_base
@@ -1144,6 +1146,8 @@ STR_VAR
   clasthac    = ~~
   thiefscl    = ~~
   bdstweap    = ~~
+  // EEex specific arguments
+  "x-clserg"  = ~~
 RET
   unusable
   clab_path
@@ -1281,14 +1285,17 @@ BEGIN
       ~clasthac~ => ~1~
       ~thiefscl~ => ~8~
       ~bdstweap~ => ~20~
+      ~x-clserg~ => ~16~
     END
     ACTION_PHP_EACH tables_ee AS resref => min_count BEGIN
-      OUTER_SPRINT string EVAL ~%%resref%%~
-      LAF a7#add_kit_ex#split STR_VAR string RET items RET_ARRAY items END
-      ACTION_IF (items > 0) BEGIN
-        OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~ && items > 1)
-        ACTION_IF (items - adjust < min_count) BEGIN
-          LAF a7#add_kit_ex#print_message INT_VAR severity = a7#msg_warn STR_VAR msg = EVAL ~Too few entries in argument "%resref%". Using defaults.~ END
+      ACTION_IF (NOT ~%resref%~ STR_EQ ~x-clserg~ || is_eeex) BEGIN
+        OUTER_SPRINT string EVAL ~%%resref%%~
+        LAF a7#add_kit_ex#split STR_VAR string RET items RET_ARRAY items END
+        ACTION_IF (items > 0) BEGIN
+          OUTER_SET adjust = ($items(~0~) STR_EQ ~%kit_name%~ && items > 1)
+          ACTION_IF (items - adjust < min_count) BEGIN
+            LAF a7#add_kit_ex#print_message INT_VAR severity = a7#msg_warn STR_VAR msg = EVAL ~Too few entries in argument "%resref%". Using defaults.~ END
+          END
         END
       END
     END
@@ -1836,6 +1843,8 @@ STR_VAR
   thiefskl      = ~~
   traplimt      = ~~
   bdstweap      = ~~
+  // EEex specific arguments
+  "x-clserg"    = ~~
 RET
   kit_id
 BEGIN
@@ -1886,6 +1895,7 @@ BEGIN
         is_sod
         is_tobex
         is_gemrb
+        is_eeex
         kit_id_base
         kits_limit
     END
@@ -1980,7 +1990,7 @@ BEGIN
       STR_VAR
         kit_name unusable clasweap weapprof abclasrq abclsmod abdcdsrq abdcscrq alignmnt dualclas luabbr stweap
         clab_path kittable clab_base_d clab_base_f clab_base_m clab_base_p clab_base_r clab_base_t base_class
-        clsrcreq clswpbon hpclass numwslot clascolr clasiskl clasthac thiefscl bdstweap
+        clsrcreq clswpbon hpclass numwslot clascolr clasiskl clasthac thiefscl bdstweap "x-clserg"
       RET
         unusable clab_path clab_base_d clab_base_f clab_base_m clab_base_p clab_base_r clab_base_t base_class
     END
@@ -2283,30 +2293,32 @@ BEGIN
       END
 
       // adding rows verbatim
-      ACTION_FOR_EACH resref IN ~clsrcreq~ ~clswpbon~ ~hpclass~ ~numwslot~ BEGIN
-        OUTER_SPRINT clone_special1 ~~
-        OUTER_SPRINT clone_special2 ~~
-        ACTION_IF (NOT ~%source_kit%~ STR_EQ ~~ && RESOURCE_CONTAINS ~%resref%.2da~ ~\b%source_kit%\b~) BEGIN
-          OUTER_SPRINT clone_special1 ~%source_kit%~
-        END
-        ACTION_IF (RESOURCE_CONTAINS ~%resref%.2da~ ~\b%kit_class_name%\b~) BEGIN
-          OUTER_SPRINT clone_special2 ~%kit_class_name%~
-        END
-        OUTER_SPRINT string EVAL ~%%resref%%~
-        LAF a7#add_kit_ex#split STR_VAR string RET items RET_ARRAY items END
-        LAF a7#add_kit_ex#add_row
-          STR_VAR
-            kit_name
-            array = ~items~
-            resref
-            clone1 = EVAL ~%clone_special1%~
-            clone2 = EVAL ~%clone_special2%~
-            clone3
-          RET success
-        END
-        ACTION_IF (success) BEGIN
-          ACTION_TO_UPPER ~resref~
-          OUTER_SET $tables_modified(~%resref%~) = 1
+      ACTION_FOR_EACH resref IN ~clsrcreq~ ~clswpbon~ ~hpclass~ ~numwslot~ ~x-clserg~ BEGIN
+        ACTION_IF (NOT "%resref%" STR_EQ ~x-clserg~ || is_eeex) BEGIN
+          OUTER_SPRINT clone_special1 ~~
+          OUTER_SPRINT clone_special2 ~~
+          ACTION_IF (NOT ~%source_kit%~ STR_EQ ~~ && RESOURCE_CONTAINS ~%resref%.2da~ ~\b%source_kit%\b~) BEGIN
+            OUTER_SPRINT clone_special1 ~%source_kit%~
+          END
+          ACTION_IF (RESOURCE_CONTAINS ~%resref%.2da~ ~\b%kit_class_name%\b~) BEGIN
+            OUTER_SPRINT clone_special2 ~%kit_class_name%~
+          END
+          OUTER_SPRINT string EVAL ~%%resref%%~
+          LAF a7#add_kit_ex#split STR_VAR string RET items RET_ARRAY items END
+          LAF a7#add_kit_ex#add_row
+            STR_VAR
+              kit_name
+              array = ~items~
+              resref
+              clone1 = EVAL ~%clone_special1%~
+              clone2 = EVAL ~%clone_special2%~
+              clone3
+            RET success
+          END
+          ACTION_IF (success) BEGIN
+            ACTION_TO_UPPER ~resref~
+            OUTER_SET $tables_modified(~%resref%~) = 1
+          END
         END
       END
 
@@ -2491,6 +2503,8 @@ RET
   thiefskl
   traplimt
   bdstweap
+  // EEex-specific
+  "x-clserg"
 BEGIN
   // resetting return values
   ACTION_FOR_EACH var IN ~kit_id~ ~kit_class~ ~mixed~ ~lower~ ~help~ ~biography~ ~briefdesc~ ~fallen~ ~fallen_notice~ ~can_fall~
@@ -2500,6 +2514,7 @@ BEGIN
   ACTION_FOR_EACH var IN ~unusable~ ~clasweap~ ~weapprof~ ~abclasrq~ ~abclsmod~ ~abdcdsrq~ ~abdcscrq~ ~alignmnt~ ~dualclas~
                          ~luabbr~ ~stweap~ ~clab_res~ ~kittable~ ~clsrcreq~ ~clswpbon~ ~hpclass~ ~numwslot~ ~clascolr~
                          ~clasiskl~ ~clasthac~ ~thiefscl~ ~backstab~ ~sneakatt~ ~crippstr~ ~thiefskl~ ~traplimt~ ~bdstweap~
+                         ~x-clserg~
   BEGIN
     OUTER_SPRINT EVAL ~%var%~ ~~
   END
@@ -2514,6 +2529,7 @@ BEGIN
     OUTER_SET is_ee = GAME_IS ~bgee bg2ee eet iwdee~
     OUTER_SET is_ee20 = (is_ee && FILE_EXISTS ~engine.lua~ && FILE_EXISTS_IN_GAME ~ui.menu~)
     OUTER_SET is_sod = (GAME_IS ~eet~ || GAME_INCLUDES ~sod~)
+    OUTER_SET is_eeex = (is_ee20 && MOD_IS_INSTALLED ~EEex.tp2~ 0)
 
     // checking kit name
     OUTER_PATCH_SAVE kit_name ~%kit_name%~ BEGIN
@@ -2745,17 +2761,19 @@ BEGIN
             END
 
             // getting table rows
-            ACTION_FOR_EACH resref IN ~clsrcreq~ ~clswpbon~ ~backstab~ ~sneakatt~ ~crippstr~ ~thiefskl~ BEGIN
-              LAF a7#add_kit_ex#get_row STR_VAR resref row_name = EVAL ~%kit_name%~ RET row row_index END
-              ACTION_IF (use_parent && row_index < 0) BEGIN
-                LAF a7#add_kit_ex#get_row STR_VAR resref row_name = EVAL ~%kit_class_name%~ RET row row_index END
-              END
-              ACTION_IF (row_index >= 0) BEGIN
-                // normalizing row data
-                LAF a7#add_kit_ex#split STR_VAR string = EVAL ~%row%~ RET items RET_ARRAY items END
-                ACTION_IF (items > 0) BEGIN OUTER_SPRINT $items(~0~) ~%kit_name%~ END
-                LAF a7#add_kit_ex#unsplit STR_VAR array = ~items~ RET string END
-                OUTER_SPRINT EVAL ~%resref%~ ~%string%~
+            ACTION_FOR_EACH resref IN ~clsrcreq~ ~clswpbon~ ~backstab~ ~sneakatt~ ~crippstr~ ~thiefskl~ ~x-clserg~ BEGIN
+              ACTION_IF (NOT ~%resref%~ STR_EQ ~x-clserg~ || is_eeex) BEGIN
+                LAF a7#add_kit_ex#get_row STR_VAR resref row_name = EVAL ~%kit_name%~ RET row row_index END
+                ACTION_IF (use_parent && row_index < 0) BEGIN
+                  LAF a7#add_kit_ex#get_row STR_VAR resref row_name = EVAL ~%kit_class_name%~ RET row row_index END
+                END
+                ACTION_IF (row_index >= 0) BEGIN
+                  // normalizing row data
+                  LAF a7#add_kit_ex#split STR_VAR string = EVAL ~%row%~ RET items RET_ARRAY items END
+                  ACTION_IF (items > 0) BEGIN OUTER_SPRINT $items(~0~) ~%kit_name%~ END
+                  LAF a7#add_kit_ex#unsplit STR_VAR array = ~items~ RET string END
+                  OUTER_SPRINT EVAL ~%resref%~ ~%string%~
+                END
               END
             END
 

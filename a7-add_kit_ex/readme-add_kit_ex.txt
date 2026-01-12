@@ -114,6 +114,7 @@ STR_VAR crippstr        (optional, EE-only) 2DA string added to crippstr.2da. Mi
 STR_VAR thiefskl        (optional, EE-only) 2DA string added to thiefskl.2da.
 STR_VAR traplimt        (optional, EE-only) 2DA string added to traplimt.2da.
 STR_VAR bdstweap        (optional, EE-only) 2DA string added to bdstweap.2da.
+STR_VAR x-clserg        (optional, EEex-only) 2DA string added to x-clserg.2da.
 
 Return value:
 RET kit_id              The numeric value generated for the specified kit. This value is exactly 0x4000 less than the
