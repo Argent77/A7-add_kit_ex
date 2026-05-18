@@ -72,7 +72,8 @@ RET kit_id             | The numeric value generated for the specified kit. This
 #### Diagnostic parameters for general use:
 Parameter | Description
 ---|---
-INT_VAR suppress_warnings  | (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero. Default: 0
+INT_VAR forbid_specialist_slot  | (optional) If this parameter is non-zero then kit installation will fail if the parent class of the kit has access to arcane magic (Mage, Bard, etc.) and the calculated kit slot would inherit specialist mage restrictions.
+INT_VAR suppress_warnings       | (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero. Default: 0
 
 #### Experimental parameters for testing purposes only:
 Parameter | Description

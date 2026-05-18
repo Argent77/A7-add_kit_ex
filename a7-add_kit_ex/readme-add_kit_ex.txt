@@ -4,7 +4,7 @@
 
 Author: Argent77
 Licence: Public Domain
-Date: 2019-08-19
+Date: 2026-05-18
 
 
 Overview
@@ -121,6 +121,9 @@ RET kit_id              The numeric value generated for the specified kit. This 
                         number your kit is assigned in kit.ids. Returns -1 if the kit couldn't be installed.
 
 Diagnostic parameters for general use:
+INT_VAR forbid_specialist_slot  (optional) If this parameter is non-zero then kit installation will fail if the parent
+                                class of the kit has access to arcane magic (Mage, Bard, etc.) and the calculated kit
+                                slot would inherit specialist mage restrictions.
 INT_VAR suppress_warnings       (optional) 0 or 1. Warnings will be printed as regular messages if set to non-zero.
 
 Experimental parameters for testing purposes only (!!!DO NOT CHANGE WITHOUT A GOOD REASON!!!)

@@ -5,7 +5,7 @@
  * Author: Argent77 
  * Multiclass kit code: based on "qd_multiclass" by Aquadrizzt and Subtledoctor
  * Licence: public domain
- * Date: 2026-01-06
+ * Date: 2026-05-18
  */
 
 OUTER_SPRINT ADD_KIT_EX_VERSION ~0.6.3~
@@ -1336,6 +1336,27 @@ BEGIN
 END
 
 
+// If the kit class is an arcane casting class then this function checks whether the specified kit slot inherits
+// specialist mage restrictions.
+DEFINE_ACTION_FUNCTION a7#is_specialist_kit
+INT_VAR
+  class = "-1"
+  slot = "-1"
+RET
+  result
+BEGIN
+  // only base classes with access to arcane magic are checked
+  ACTION_MATCH class WITH
+    1 5 7 10 13 14 17 19 BEGIN
+      OUTER_SET specialists = BIT6 | BIT7 | BIT8 | BIT9 | BIT10 | BIT11 | BIT12 | BIT13  // specialist mage bits
+      OUTER_SET result = (slot & specialists) != 0
+    END
+    DEFAULT
+      OUTER_SET result = 0
+  END
+END
+
+
 // Determine whether kit class indicates a multiclass
 DEFINE_ACTION_FUNCTION a7#add_kit_ex#is_multiclass
 INT_VAR kit_class = 0
@@ -1801,10 +1822,11 @@ INT_VAR
   can_fall      = 1
   prettify      = 1
   // Diagnostic arguments
-  suppress_warnings     = 0
+  forbid_specialist_slot  = 0
+  suppress_warnings       = 0
   // For testing purposes only
-  __kits_limit_override = 0
-  __kits_base_value     = 0x4000
+  __kits_limit_override   = 0
+  __kits_base_value       = 0x4000
 STR_VAR
   kit_name      = ~~
   source_kit    = ~~
@@ -1848,6 +1870,7 @@ STR_VAR
 RET
   kit_id
 BEGIN
+  OUTER_SET failed = 0
   OUTER_SET kit_id = "-1"
   OUTER_SET a7#is_silent = IS_SILENT
 
@@ -1882,8 +1905,11 @@ BEGIN
   END
 
   ACTION_IF (kit_id >= 0) BEGIN
+    OUTER_SET failed = 1
     LAF a7#add_kit_ex#print_message INT_VAR severity = a7#msg_print STR_VAR msg = EVAL ~Kit [%kit_name%] already present! Skipping!~ END
-  END ELSE BEGIN
+  END
+
+  ACTION_IF (NOT failed) BEGIN
     // advanced check for kit support
     LAF a7#add_kit_ex#get_kit_support
       INT_VAR
@@ -1961,7 +1987,18 @@ BEGIN
       LAF a7#add_kit_ex#print_message INT_VAR severity = a7#msg_fail STR_VAR msg = EVAL ~Unable to add kit [%kit_name%]. The game does not support more than %kits_limit% kits.~ END
     END
     OUTER_SET kit_number_full = kit_number + kit_id_base
+  END
 
+  // checking kit slot for specialist mage restrictions
+  ACTION_IF (NOT failed && forbid_specialist_slot != 0) BEGIN
+    LAF a7#is_specialist_kit INT_VAR class = kit_class slot = kit_id RET failed = result END
+    ACTION_IF (failed) BEGIN
+      OUTER_SET kit_id = "-1"
+      LAF a7#add_kit_ex#print_message INT_VAR severity = a7#msg_warn STR_VAR msg = EVAL ~New kit cannot be installed without inheriting specialist mage restrictions.~ END
+    END
+  END
+
+  ACTION_IF (NOT failed) BEGIN
     // getting parent class name
     OUTER_PATCH ~~ BEGIN
       LOOKUP_IDS_SYMBOL_OF_INT kit_class_name ~class~ kit_class
